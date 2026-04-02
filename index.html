@@ -420,6 +420,117 @@
     }
     .tag-link:hover { color: var(--accent-dark); text-decoration: underline; }
 
+    /* ── Revoke Panel ── */
+    .rv-shell { display:flex; min-height:520px; }
+    .rv-via-panel {
+      width:280px; flex-shrink:0; border-right:1px solid var(--border);
+      display:flex; flex-direction:column; overflow:hidden; background:#fafbfc;
+    }
+    .rv-via-panel-hd { padding:14px 14px 0; flex-shrink:0; }
+    .rv-via-panel-hd .rv-title {
+      display:flex; align-items:center; gap:6px;
+      font-size:14px; font-weight:700; color:var(--text-primary); margin-bottom:10px;
+    }
+    .rv-via-list { flex:1; overflow-y:auto; padding:4px 6px 6px; }
+    .rv-via-card {
+      display:flex; align-items:center; gap:9px;
+      padding:9px 10px; border-radius:9px; cursor:pointer;
+      transition:all .13s; border-left:3px solid transparent; margin-bottom:1px;
+    }
+    .rv-via-card:hover { background:#f0f4f8; border-left-color:#cbd5e1; }
+    .rv-via-card.rv-sel { background:#f0fdf4; border-left-color:var(--accent); }
+    .rv-via-card .rv-av {
+      width:34px; height:34px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:11px; color:white;
+    }
+    .rv-via-card .rv-info { flex:1; min-width:0; }
+    .rv-via-card .rv-nm { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .rv-via-card .rv-uid { font-size:10.5px; color:#94a3b8; font-family:'JetBrains Mono',monospace; }
+    .rv-cnt { font-size:10.5px; font-weight:600; padding:2px 7px; border-radius:10px; flex-shrink:0; background:#dbeafe; color:#3b82f6; }
+    .rv-cnt.zero { background:#f1f5f9; color:#94a3b8; }
+
+    .rv-main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+    .rv-main-hd {
+      padding:14px 18px; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:10px; flex-shrink:0; background:white;
+    }
+    .rv-main-hd h3 { font-size:16px; font-weight:700; }
+    .rv-main-hd .rv-uid-tag { font-size:10.5px; font-family:'JetBrains Mono',monospace; color:#94a3b8; background:#f1f5f9; padding:2px 7px; border-radius:4px; }
+    .rv-main-body { flex:1; overflow-y:auto; padding:14px 18px; }
+
+    /* Accordion */
+    .rv-acc { margin-bottom:10px; border:1px solid var(--border); border-radius:10px; background:white; overflow:hidden; }
+    .rv-acc-hd {
+      display:flex; align-items:center; gap:9px;
+      padding:10px 14px; cursor:pointer; transition:background .12s; user-select:none;
+    }
+    .rv-acc-hd:hover { background:#fafbfc; }
+    .rv-acc-icon {
+      width:26px; height:26px; border-radius:6px;
+      display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    }
+    .rv-acc-icon.is-bm { background:#dbeafe; color:#3b82f6; }
+    .rv-acc-icon.is-personal { background:#fef3c7; color:#d97706; }
+    .rv-acc-title { font-weight:600; font-size:13.5px; }
+    .rv-acc-bmid { font-size:10.5px; color:#94a3b8; font-family:'JetBrains Mono',monospace; }
+    .rv-acc-cnt { font-size:10.5px; font-weight:600; padding:2px 7px; border-radius:10px; background:#f1f5f9; color:#64748b; }
+    .rv-acc-chev { width:16px; height:16px; transition:transform .2s; color:#94a3b8; flex-shrink:0; }
+    .rv-acc-chev.is-open { transform:rotate(180deg); }
+    .rv-acc-body { border-top:1px solid var(--border); }
+
+    /* Perm badges in revoke */
+    .rv-perm {
+      display:inline-flex; padding:1px 7px; border-radius:4px;
+      font-size:10px; font-weight:600; font-family:'JetBrains Mono',monospace; margin-right:2px;
+    }
+    .rv-perm-MANAGE { background:#ffedd5; color:#c2410c; }
+    .rv-perm-ADVERTISE { background:#dbeafe; color:#3b82f6; }
+    .rv-perm-ANALYZE { background:#f1f5f9; color:#475569; }
+    .rv-perm-DRAFT { background:#ede9fe; color:#7c3aed; }
+
+    /* Revoke btn inline */
+    .rv-revoke-btn {
+      padding:3px 9px; border-radius:5px; font-size:11.5px; font-weight:500;
+      cursor:pointer; transition:all .12s; border:1px solid #fecaca;
+      background:#fef2f2; color:#ef4444; font-family:inherit; white-space:nowrap;
+    }
+    .rv-revoke-btn:hover { background:#fee2e2; }
+
+    /* Bulk bar */
+    .rv-bulk {
+      padding:10px 18px; background:#1e293b; color:white;
+      display:flex; align-items:center; gap:10px; flex-shrink:0;
+      box-shadow:0 -4px 16px rgba(0,0,0,.12);
+    }
+    .rv-bulk .rv-bulk-txt { flex:1; font-size:13px; }
+    .rv-bulk .btn-danger-solid { background:#ef4444; color:white; border:none; }
+
+    /* Confirm modal */
+    .rv-modal-bg {
+      position:fixed; inset:0; background:rgba(0,0,0,.45);
+      display:flex; align-items:center; justify-content:center; z-index:1000;
+    }
+    .rv-modal {
+      background:white; border-radius:14px; width:420px; max-width:90vw;
+      box-shadow:0 20px 60px rgba(0,0,0,.2); overflow:hidden;
+    }
+    .rv-modal-body { padding:22px; text-align:center; }
+    .rv-modal-icon { width:48px; height:48px; border-radius:50%; background:#fee2e2; color:#ef4444; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; }
+    .rv-modal-title { font-size:16px; font-weight:700; margin-bottom:8px; }
+    .rv-modal-desc { font-size:13px; color:#64748b; line-height:1.6; }
+    .rv-modal-warn { margin-top:10px; padding:7px 12px; border-radius:7px; background:#fef3c7; font-size:11.5px; color:#92400e; display:flex; align-items:center; gap:6px; justify-content:center; }
+    .rv-modal-ft { padding:12px 22px; background:#fafbfc; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:8px; }
+
+    @media (max-width: 768px) {
+      .rv-shell { flex-direction:column; min-height:auto; }
+      .rv-via-panel { width:100%; max-height:200px; border-right:none; border-bottom:1px solid var(--border); }
+      .rv-via-list { display:flex; overflow-x:auto; overflow-y:hidden; gap:4px; flex-wrap:nowrap; }
+      .rv-via-card { min-width:170px; flex-shrink:0; margin-bottom:0; }
+      .rv-main-hd { padding:10px 12px; flex-wrap:wrap; }
+      .rv-main-body { padding:10px 12px; }
+    }
+
     /* ── Stepper ── */
     .stepper { display:flex; align-items:center; gap:0; margin-bottom:20px; padding:0 10px; }
     .step-item {
@@ -502,6 +613,7 @@
     /* ── Animation ── */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     .fade-in { animation: fadeIn .2s ease; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ══════════ RESPONSIVE ══════════ */
 
@@ -1494,6 +1606,10 @@
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                 Kháng Nghị TKQC
               </div>
+              <div class="tab-btn" :class="tvTab==='revoke' ? 'tab-active':''" @click="tvTab='revoke'">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 104.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0112 5c7 0 10 7 10 7a13.16 13.16 0 01-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 002 12s3 7 10 7a9.74 9.74 0 005.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                Quản lý / Thu hồi TKQC
+              </div>
             </div>
 
             <!-- ═══ TAB: SHARE TKQC ĐẾN BM ═══ -->
@@ -2415,6 +2531,454 @@
               </div>
             </div>
 
+            <!-- ═══ TAB: QUẢN LÝ / THU HỒI TKQC ═══ -->
+            <div v-if="tvTab==='revoke'" style="padding:0;">
+              <div class="rv-shell">
+
+                <!-- ═ VIA Panel (trái) ═ -->
+                <div class="rv-via-panel">
+                  <div class="rv-via-panel-hd">
+                    <div class="rv-title">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
+                      Danh sách VIA
+                      <span style="font-size:10.5px; font-weight:600; padding:2px 7px; border-radius:10px; background:#dbeafe; color:#3b82f6;">{{ okVias.length }}</span>
+                    </div>
+                    <input class="fi" placeholder="Tìm VIA..." v-model="rvViaSearch" style="margin-bottom:10px; font-size:12px;" />
+                  </div>
+                  <div class="rv-via-list">
+                    <div v-for="via in rvFilteredViaList" :key="via.id"
+                         :class="['rv-via-card', rvSelectedVia && rvSelectedVia.id===via.id ? 'rv-sel' : '']"
+                         @click="rvSelectedVia=via; rvChecked={}">
+                      <div class="rv-av" :style="{background: via.color}">{{ via.initials }}</div>
+                      <div class="rv-info">
+                        <div class="rv-nm">{{ via.name }}</div>
+                        <div class="rv-uid">UID: {{ via.uid }}</div>
+                      </div>
+                      <span :class="['rv-cnt', (rvRelationMap[via.id]||[]).reduce((s,g)=>s+g.accounts.length,0)===0?'zero':'']">
+                        {{ (rvRelationMap[via.id]||[]).reduce((s,g)=>s+g.accounts.length,0) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- ═ Main Panel (phải) ═ -->
+                <div class="rv-main">
+
+                  <!-- Empty state -->
+                  <div v-if="!rvSelectedVia" style="margin:auto; text-align:center; padding:40px; color:#94a3b8;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.3; margin-bottom:10px;"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
+                    <div style="font-size:13.5px;">Chọn một VIA từ danh sách bên trái<br/>để xem và quản lý quyền TKQC</div>
+                  </div>
+
+                  <template v-if="rvSelectedVia">
+                    <!-- Header -->
+                    <div class="rv-main-hd">
+                      <div class="rv-av" :style="{background:rvSelectedVia.color, width:'32px', height:'32px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontWeight:700, fontSize:'11px', flexShrink:0}">{{ rvSelectedVia.initials }}</div>
+                      <div>
+                        <h3>{{ rvSelectedVia.name }}</h3>
+                        <span class="rv-uid-tag">UID: {{ rvSelectedVia.uid }}</span>
+                      </div>
+                      <div style="flex:1;"></div>
+                      <span style="font-size:11px; color:#94a3b8; margin-right:6px;">Cập nhật lúc: {{ rvTimeStr }}</span>
+                      <button class="btn btn-ghost" style="padding:5px 10px; font-size:12px;" @click="rvRefreshing=true; setTimeout(()=>rvRefreshing=false, 1200)">
+                        <svg v-if="!rvRefreshing" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                        <span v-if="rvRefreshing" style="width:12px; height:12px; border:2px solid rgba(0,0,0,.1); border-top-color:#64748b; border-radius:50%; display:inline-block; animation:spin .6s linear infinite;"></span>
+                        {{ rvRefreshing ? 'Đang tải...' : 'Refresh' }}
+                      </button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="rv-main-body">
+                      <div v-if="rvCurrentGroups.length === 0" style="text-align:center; padding:40px; color:#94a3b8;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.3; margin-bottom:8px;"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                        <div style="font-size:13px;">VIA này chưa có quyền trên TKQC nào.</div>
+                      </div>
+
+                      <template v-if="rvCurrentGroups.length > 0">
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                          <div style="font-size:14px; font-weight:700;">Quan hệ quyền</div>
+                          <span style="font-size:12px; color:#94a3b8;">{{ rvTotalTkqc }} TKQC trong {{ rvCurrentGroups.length }} nhóm</span>
+                        </div>
+
+                        <!-- Accordion per group -->
+                        <div v-for="group in rvCurrentGroups" :key="group.groupId" class="rv-acc">
+                          <div class="rv-acc-hd" @click="rvToggleGroup(group.groupId)">
+                            <div :class="['rv-acc-icon', group.groupBmId ? 'is-bm' : 'is-personal']">
+                              <svg v-if="group.groupBmId" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+                              <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
+                            </div>
+                            <div>
+                              <div class="rv-acc-title">{{ group.groupName }}</div>
+                              <div v-if="group.groupBmId" class="rv-acc-bmid">ID: {{ group.groupBmId }}</div>
+                            </div>
+                            <div style="flex:1;"></div>
+                            <div class="rv-acc-cnt">{{ group.accounts.length }} TKQC</div>
+                            <label @click.stop style="margin-right:4px;">
+                              <input type="checkbox"
+                                :checked="group.accounts.every(a => rvChecked[a.actId])"
+                                @change="rvToggleGroupAll(group)"
+                                style="width:14px; height:14px; accent-color:var(--accent); cursor:pointer;" />
+                            </label>
+                            <svg :class="['rv-acc-chev', rvOpenGroups[group.groupId] !== false ? 'is-open' : '']" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                          </div>
+                          <div v-if="rvOpenGroups[group.groupId] !== false" class="rv-acc-body">
+                            <table class="dt">
+                              <thead>
+                                <tr>
+                                  <th style="width:36px; text-align:center;"></th>
+                                  <th style="min-width:125px;">TKQC ID</th>
+                                  <th style="min-width:145px;">Tên TKQC</th>
+                                  <th style="min-width:150px;">Quyền</th>
+                                  <th style="min-width:80px;">Trạng thái</th>
+                                  <th style="width:95px; text-align:center;">Thao tác</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr v-for="acc in group.accounts" :key="acc.actId">
+                                  <td style="text-align:center;">
+                                    <input type="checkbox" :checked="!!rvChecked[acc.actId]" @change="rvChecked[acc.actId] = !rvChecked[acc.actId]" style="width:13px; height:13px; accent-color:var(--accent); cursor:pointer;" />
+                                  </td>
+                                  <td>
+                                    <span class="mono" style="color:#3b82f6; font-size:11.5px;">act_{{ acc.actId }}</span>
+                                  </td>
+                                  <td style="font-weight:500; font-size:13px;">{{ acc.name }}</td>
+                                  <td>
+                                    <span v-for="t in acc.tasks" :key="t" :class="'rv-perm rv-perm-'+t">{{ t }}</span>
+                                  </td>
+                                  <td>
+                                    <span :class="['badge', acc.status===1 ? 'bg-green' : 'bg-red']" style="font-size:11.5px;">{{ acc.status===1 ? 'Active' : 'Disabled' }}</span>
+                                  </td>
+                                  <td style="text-align:center;">
+                                    <button class="rv-revoke-btn" @click="rvConfirmTarget={acc, group}; rvShowConfirm=true">
+                                      {{ group.groupBmId ? 'Thu hồi BM' : 'Thu hồi VIA' }}
+                                    </button>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+
+                    <!-- Bulk bar -->
+                    <div v-if="rvCheckedCount > 0" class="rv-bulk">
+                      <div class="rv-bulk-txt">Đã chọn <strong>{{ rvCheckedCount }}</strong> quan hệ</div>
+                      <button class="btn btn-ghost" style="color:#94a3b8; border-color:#475569;" @click="rvChecked={}">Bỏ chọn</button>
+                      <button class="btn btn-danger-solid" @click="rvBulkConfirm=true">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                        Thu hồi đã chọn ({{ rvCheckedCount }})
+                      </button>
+                    </div>
+                  </template>
+                </div>
+              </div>
+
+              <!-- ═ Confirm Dialog (single) ═ -->
+              <div v-if="rvShowConfirm" class="rv-modal-bg" @click="rvShowConfirm=false">
+                <div class="rv-modal" @click.stop>
+                  <div class="rv-modal-body">
+                    <div class="rv-modal-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    </div>
+                    <div class="rv-modal-title">Xác nhận thu hồi quyền</div>
+                    <div class="rv-modal-desc" v-if="rvConfirmTarget">
+                      <span v-if="rvConfirmTarget.group.groupBmId">
+                        Thu hồi quyền BM <strong>{{ rvConfirmTarget.group.groupName }}</strong> trên TKQC <strong>{{ rvConfirmTarget.acc.name }}</strong>?<br/>BM đó sẽ mất toàn bộ quyền truy cập TKQC này ngay lập tức.
+                      </span>
+                      <span v-else>
+                        Thu hồi quyền <strong>{{ rvSelectedVia.name }}</strong> trên TKQC <strong>{{ rvConfirmTarget.acc.name }}</strong>?<br/>VIA đó sẽ không còn quyền <strong>{{ rvConfirmTarget.acc.tasks.join(', ') }}</strong> trên tài khoản này.
+                      </span>
+                    </div>
+                    <div class="rv-modal-warn">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      Thao tác này không thể hoàn tác.
+                    </div>
+                  </div>
+                  <div class="rv-modal-ft">
+                    <button class="btn btn-ghost" @click="rvShowConfirm=false">Hủy</button>
+                    <button class="btn btn-danger-solid" @click="rvDoRevoke(rvConfirmTarget.acc.actId); rvShowConfirm=false">Xác nhận thu hồi</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ═ Confirm Dialog (bulk) ═ -->
+              <div v-if="rvBulkConfirm" class="rv-modal-bg" @click="rvBulkConfirm=false">
+                <div class="rv-modal" @click.stop>
+                  <div class="rv-modal-body">
+                    <div class="rv-modal-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    </div>
+                    <div class="rv-modal-title">Xác nhận thu hồi hàng loạt</div>
+                    <div class="rv-modal-desc">
+                      Thu hồi quyền <strong>{{ rvSelectedVia.name }}</strong> trên <strong>{{ rvCheckedCount }} TKQC</strong> đã chọn?
+                    </div>
+                    <div style="margin-top:8px; max-height:120px; overflow-y:auto; background:#f8fafc; border-radius:7px; padding:7px 10px; border:1px solid var(--border); text-align:left;">
+                      <div v-for="acc in rvCheckedAccList" :key="acc.actId" style="font-size:11.5px; color:#475569; padding:2px 0;">
+                        <span class="mono" style="color:#3b82f6;">act_{{ acc.actId }}</span> — {{ acc.name }}
+                      </div>
+                    </div>
+                    <div class="rv-modal-warn">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      Thao tác này không thể hoàn tác.
+                    </div>
+                  </div>
+                  <div class="rv-modal-ft">
+                    <button class="btn btn-ghost" @click="rvBulkConfirm=false">Hủy</button>
+                    <button class="btn btn-danger-solid" @click="rvDoBulkRevoke(); rvBulkConfirm=false">Xác nhận thu hồi ({{ rvCheckedCount }})</button>
+                  </div>
+                </div>
+              </div>
+
+            <!-- old-rv-cleanup-start -->
+            <template v-if="false">
+                  <select class="fs" v-model="rvViaId">
+                    <option value="">— Chọn VIA —</option>
+                    <option v-for="v in okVias" :key="v.id" :value="v.id">{{ v.name }} ({{ v.fbId }})</option>
+                  </select>
+                </div>
+                <div class="step-footer">
+                  <button class="btn btn-green" :disabled="!rvViaId" @click="rvStep=2">Tiếp tục</button>
+                </div>
+              </div>
+
+              <!-- Step 2: Chọn nguồn (BM hoặc Via đã share) -->
+              <div v-if="rvStep===2" class="step-card">
+                <div class="step-card-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+                  Chọn BM / Via chứa TKQC cần quản lý
+                </div>
+                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Chọn BM hoặc Via đích đã được share TKQC trước đó. Hệ thống sẽ liệt kê tất cả TKQC đang được chia sẻ.</p>
+
+                <div class="cfg-label" style="margin-bottom:8px;">Loại nguồn</div>
+                <div class="radio-group" style="margin-bottom:14px;">
+                  <div :class="['radio-card', rvSourceType==='bm'?'radio-active':'']" @click="rvSourceType='bm'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
+                    BM đích
+                  </div>
+                  <div :class="['radio-card', rvSourceType==='via'?'radio-active':'']" @click="rvSourceType='via'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    Via đích
+                  </div>
+                </div>
+
+                <div class="cfg-row">
+                  <div style="flex:1;">
+                    <div class="cfg-label">{{ rvSourceType === 'bm' ? 'ID BM đích' : 'ID/UID Via đích' }} (phân cách bởi dấu phẩy hoặc xuống dòng)</div>
+                    <textarea class="fi" v-model="rvTargetIds" rows="3" :placeholder="rvSourceType==='bm' ? 'VD: 823041xxx, 912345xxx' : 'VD: 100076349899640, 100006287882522'" style="resize:vertical;"></textarea>
+                  </div>
+                </div>
+                <div v-if="rvTargetIds.trim()" style="font-size:12.5px; color:#64748b; margin-top:4px;">
+                  Đã nhập: <strong>{{ rvTargetIds.split(/[,\n]+/).filter(s=>s.trim()).length }}</strong> {{ rvSourceType === 'bm' ? 'BM' : 'Via' }}
+                </div>
+                <div class="step-footer">
+                  <button class="btn btn-ghost" @click="rvStep=1">Quay lại</button>
+                  <button class="btn btn-green" :disabled="!rvTargetIds.trim()" @click="rvStep=3">Fetch TKQC</button>
+                </div>
+              </div>
+
+              <!-- Step 3: Danh sách TKQC đang được share -->
+              <div v-if="rvStep===3" class="step-card">
+                <div class="step-card-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                  Danh sách TKQC đang chia sẻ
+                </div>
+                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Tick chọn TKQC cần thao tác. Hệ thống hiển thị quyền hiện tại và {{ rvSourceType === 'bm' ? 'BM' : 'Via' }} đang giữ.</p>
+
+                <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center;">
+                  <input class="fi" placeholder="Lọc theo tên hoặc ID..." v-model="rvAccFilter" style="max-width:260px;" />
+                  <div style="margin-left:auto; font-size:13px; font-weight:600; color:var(--text-primary);">
+                    {{ rvSharedAccs.length }} TKQC đang chia sẻ
+                  </div>
+                </div>
+
+                <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border); max-height:340px; overflow-y:auto;">
+                  <table class="dt">
+                    <thead>
+                      <tr>
+                        <th style="width:38px; text-align:center;"><input type="checkbox" checked style="width:14px; height:14px; accent-color:var(--accent);" /></th>
+                        <th style="min-width:180px;">Tên TKQC</th>
+                        <th style="min-width:140px;">ID</th>
+                        <th style="min-width:140px;">{{ rvSourceType === 'bm' ? 'BM đích' : 'Via đích' }}</th>
+                        <th style="min-width:180px;">Quyền hiện tại</th>
+                        <th style="min-width:90px;">Trạng thái</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="acc in rvFilteredAccs" :key="acc.id">
+                        <td style="text-align:center;"><input type="checkbox" v-model="acc.checked" style="width:14px; height:14px; accent-color:var(--accent);" /></td>
+                        <td style="font-weight:500;">{{ acc.name }}</td>
+                        <td><span class="mono" style="color:#3b82f6;">{{ acc.actId }}</span></td>
+                        <td><span class="mono" style="font-size:11px; color:#64748b;">{{ acc.targetName }}</span></td>
+                        <td>
+                          <div style="display:flex; gap:3px; flex-wrap:wrap;">
+                            <span v-for="p in acc.perms" :key="p" class="tpl-var" :style="{background: p==='MANAGE'?'#dcfce7':p==='ADVERTISE'?'#dbeafe':p==='ANALYZE'?'#fef3c7':'#f1f5f9', color: p==='MANAGE'?'#16a34a':p==='ADVERTISE'?'#2563eb':p==='ANALYZE'?'#d97706':'#475569'}">{{ p }}</span>
+                          </div>
+                        </td>
+                        <td><span :class="['badge', acc.status==='active'?'bg-green':'bg-red']">{{ acc.status==='active'?'Active':'Disabled' }}</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="step-footer">
+                  <button class="btn btn-ghost" @click="rvStep=2">Quay lại</button>
+                  <button class="btn btn-green" @click="rvStep=4">Tiếp tục</button>
+                </div>
+              </div>
+
+              <!-- Step 4: Chọn hành động -->
+              <div v-if="rvStep===4" class="step-card">
+                <div class="step-card-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                  Chọn hành động
+                </div>
+                <p style="font-size:13px; color:#64748b; margin-bottom:14px;">
+                  Đã chọn <strong>{{ rvSharedAccs.filter(a=>a.checked).length }}</strong> TKQC. Chọn hành động cần thực hiện:
+                </p>
+
+                <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+
+                  <!-- Thu hồi (Revoke) -->
+                  <div :style="{
+                    padding:'14px 18px', borderRadius:'10px', cursor:'pointer', transition:'all .15s',
+                    border: rvAction==='revoke' ? '2px solid #ef4444' : '1px solid var(--border)',
+                    background: rvAction==='revoke' ? '#fef2f2' : 'white'
+                  }" @click="rvAction='revoke'">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                      <input type="radio" value="revoke" v-model="rvAction" style="accent-color:#ef4444; flex-shrink:0;" />
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                      <div style="font-weight:700; font-size:14px;" :style="{color: rvAction==='revoke' ? '#dc2626' : 'var(--text-primary)'}">Thu hồi TKQC</div>
+                    </div>
+                    <div style="font-size:12.5px; color:#64748b; padding-left:42px;">Xóa quyền truy cập TKQC khỏi {{ rvSourceType === 'bm' ? 'BM' : 'Via' }} đích. TKQC vẫn thuộc BM nguồn nhưng {{ rvSourceType === 'bm' ? 'BM' : 'Via' }} đích sẽ không còn thấy nó.</div>
+                    <div style="padding:6px 10px; background:#fee2e2; border-radius:6px; font-size:11.5px; color:#991b1b; margin-top:8px; margin-left:42px; display:inline-flex; align-items:center; gap:4px;">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                      Hành động không thể hoàn tác. TKQC phải được share lại nếu muốn cấp quyền lại.
+                    </div>
+                  </div>
+
+                  <!-- Thay đổi quyền -->
+                  <div :style="{
+                    padding:'14px 18px', borderRadius:'10px', cursor:'pointer', transition:'all .15s',
+                    border: rvAction==='update' ? '2px solid #3b82f6' : '1px solid var(--border)',
+                    background: rvAction==='update' ? '#eff6ff' : 'white'
+                  }" @click="rvAction='update'">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                      <input type="radio" value="update" v-model="rvAction" style="accent-color:#3b82f6; flex-shrink:0;" />
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      <div style="font-weight:700; font-size:14px;" :style="{color: rvAction==='update' ? '#2563eb' : 'var(--text-primary)'}">Thay đổi quyền</div>
+                    </div>
+                    <div style="font-size:12.5px; color:#64748b; padding-left:42px;">Cập nhật permitted_tasks của TKQC đã share. Thay đổi mức quyền mà không cần thu hồi rồi share lại.</div>
+                  </div>
+
+                  <!-- Kiểm tra trạng thái -->
+                  <div :style="{
+                    padding:'14px 18px', borderRadius:'10px', cursor:'pointer', transition:'all .15s',
+                    border: rvAction==='check' ? '2px solid var(--accent)' : '1px solid var(--border)',
+                    background: rvAction==='check' ? '#f0fdf4' : 'white'
+                  }" @click="rvAction='check'">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                      <input type="radio" value="check" v-model="rvAction" style="accent-color:var(--accent); flex-shrink:0;" />
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      <div style="font-weight:700; font-size:14px;" :style="{color: rvAction==='check' ? 'var(--accent)' : 'var(--text-primary)'}">Kiểm tra trạng thái share</div>
+                    </div>
+                    <div style="font-size:12.5px; color:#64748b; padding-left:42px;">Xác minh TKQC còn đang được share hay đã bị thu hồi/mất quyền. Cập nhật trạng thái hiện tại từ Facebook.</div>
+                  </div>
+                </div>
+
+                <!-- Cấu hình khi chọn "Thay đổi quyền" -->
+                <div v-if="rvAction==='update'" style="margin-bottom:14px;">
+                  <div class="cfg-label" style="margin-bottom:8px;">Mức quyền mới</div>
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <div v-for="p in rvPermPresets" :key="p.key" :style="{
+                      padding:'10px 14px', borderRadius:'8px', cursor:'pointer', transition:'all .15s',
+                      border: rvNewPerm===p.key ? '2px solid #3b82f6' : '1px solid var(--border)',
+                      background: rvNewPerm===p.key ? '#eff6ff' : 'white'
+                    }" @click="rvNewPerm=p.key">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="radio" :value="p.key" v-model="rvNewPerm" style="accent-color:#3b82f6; flex-shrink:0;" />
+                        <div style="font-weight:600; font-size:13px;" :style="{color: rvNewPerm===p.key ? '#2563eb' : 'var(--text-primary)'}">{{ p.label }}</div>
+                        <div style="display:flex; gap:3px; margin-left:auto; flex-wrap:wrap;">
+                          <span v-for="t in p.tasks" :key="t" class="tpl-var" :style="{background: t==='MANAGE'?'#dcfce7':t==='ADVERTISE'?'#dbeafe':t==='ANALYZE'?'#fef3c7':'#f1f5f9', color: t==='MANAGE'?'#16a34a':t==='ADVERTISE'?'#2563eb':t==='ANALYZE'?'#d97706':'#475569', fontSize:'10px'}">{{ t }}</span>
+                          <span v-if="p.key==='draft'" style="font-size:9px; color:#f59e0b; font-weight:500; background:#fef3c7; padding:1px 5px; border-radius:3px;">Undoc.</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Cấu hình chung -->
+                <div class="cfg-row">
+                  <div style="min-width:140px;">
+                    <div class="cfg-label">Delay (ms)</div>
+                    <input class="fi" type="number" v-model.number="rvDelay" min="500" max="10000" />
+                  </div>
+                </div>
+
+                <div class="step-footer">
+                  <button class="btn btn-ghost" @click="rvStep=3">Quay lại</button>
+                  <button class="btn" :class="rvAction==='revoke' ? 'btn-danger' : 'btn-green'" @click="rvStep=5">
+                    {{ rvAction==='revoke' ? 'Xác nhận thu hồi' : rvAction==='update' ? 'Xác nhận thay đổi' : 'Chạy kiểm tra' }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- Step 5: Kết quả -->
+              <div v-if="rvStep===5" class="step-card">
+                <div class="step-card-title">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Kết quả {{ rvAction==='revoke' ? 'thu hồi' : rvAction==='update' ? 'thay đổi quyền' : 'kiểm tra' }}
+                </div>
+                <div style="display:flex; gap:14px; margin-bottom:14px; flex-wrap:wrap;">
+                  <div class="stat-mini" style="background:#dcfce7;"><div class="stat-mini-val" style="color:#16a34a;">{{ rvResults.filter(r=>r.status==='ok').length }}</div><div class="stat-mini-label" style="color:#16a34a;">Thành công</div></div>
+                  <div class="stat-mini" style="background:#fee2e2;"><div class="stat-mini-val" style="color:#dc2626;">{{ rvResults.filter(r=>r.status==='fail').length }}</div><div class="stat-mini-label" style="color:#dc2626;">Thất bại</div></div>
+                  <div class="stat-mini" style="background:#f1f5f9;"><div class="stat-mini-val" style="color:#475569;">{{ rvResults.length }}</div><div class="stat-mini-label" style="color:#475569;">Tổng</div></div>
+                </div>
+
+                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                  <button class="btn btn-green">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Xuất CSV
+                  </button>
+                  <button class="btn btn-ghost" @click="rvStep=1; rvResults=[]">Tạo job mới</button>
+                </div>
+
+                <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border);">
+                  <table class="dt">
+                    <thead>
+                      <tr>
+                        <th style="min-width:170px;">TKQC</th>
+                        <th style="min-width:130px;">Act ID</th>
+                        <th style="min-width:130px;">{{ rvSourceType === 'bm' ? 'BM đích' : 'Via đích' }}</th>
+                        <th style="min-width:90px;">Hành động</th>
+                        <th style="min-width:90px;">Kết quả</th>
+                        <th v-if="rvAction==='update'" style="min-width:160px;">Quyền mới</th>
+                        <th v-if="rvAction==='check'" style="min-width:160px;">Quyền hiện tại</th>
+                        <th style="min-width:180px;">Chi tiết</th>
+                        <th style="min-width:120px;">Thời gian</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="r in rvResults" :key="r.actId">
+                        <td style="font-weight:500;">{{ r.name }}</td>
+                        <td><span class="mono" style="color:#3b82f6;">{{ r.actId }}</span></td>
+                        <td><span class="mono" style="font-size:11px; color:#64748b;">{{ r.target }}</span></td>
+                        <td><span :class="['badge', r.action==='revoke'?'bg-red':r.action==='update'?'bg-blue':'bg-green']">{{ r.action==='revoke'?'Thu hồi':r.action==='update'?'Đổi quyền':'Kiểm tra' }}</span></td>
+                        <td><span :class="['badge', r.status==='ok'?'bg-green':'bg-red']">{{ r.status==='ok'?'OK':'Lỗi' }}</span></td>
+                        <td v-if="rvAction==='update' || rvAction==='check'">
+                          <div style="display:flex; gap:3px; flex-wrap:wrap;">
+                            <span v-for="p in (r.perms||[])" :key="p" class="tpl-var" style="font-size:10px;">{{ p }}</span>
+                            <span v-if="!r.perms || !r.perms.length" style="color:#94a3b8; font-size:12px;">—</span>
+                          </div>
+                        </td>
+                        <td style="font-size:12px; color:#64748b;">{{ r.detail || '—' }}</td>
+                        <td style="font-size:12px; color:#64748b;">{{ r.ts }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+            </template>
+            <!-- old-rv-cleanup-end -->
+
           </div>
         </div>
 
@@ -2670,6 +3234,58 @@
           { actId:'act_901236', name:'TKQC Test 003', status:'failed', error:'[Code 190] Token hết hạn', ts:'02/04/2026 10:03' },
           { actId:'act_901237', name:'TKQC Test 004', status:'skipped', error:'canAppeal = false', ts:'—' },
         ],
+        // ── Quản lý / Thu hồi TKQC (panel-based)
+        rvViaSearch: '',
+        rvSelectedVia: null,
+        rvRefreshing: false,
+        rvChecked: {},
+        rvOpenGroups: {},
+        rvShowConfirm: false,
+        rvBulkConfirm: false,
+        rvConfirmTarget: null,
+        rvRemovedIds: {},
+        rvRelationMap: {
+          2: [ // Rinrin Sundari (id:2)
+            { groupId:'personal', groupName:'TKQC cá nhân ngoài BM', groupBmId:null, accounts:[
+              { actId:'9912001', name:'TKQC Cá nhân 01', tasks:['ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9912002', name:'TKQC Cá nhân 02', tasks:['MANAGE','ADVERTISE','ANALYZE'], status:2 },
+            ]},
+            { groupId:'bm-techcu', groupName:'Techcu 05397050', groupBmId:'185130878819889', accounts:[
+              { actId:'9913001', name:'TKQC VN 01', tasks:['ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9913002', name:'TKQC VN 02', tasks:['ANALYZE'], status:1 },
+              { actId:'9913003', name:'TKQC VN 03', tasks:['ADVERTISE','ANALYZE'], status:1 },
+            ]},
+            { groupId:'bm-limit', groupName:'BM1 limit 250 chưa tiêu thế live', groupBmId:'433779351118700', accounts:[
+              { actId:'9914001', name:'TKQC Beta 01', tasks:['MANAGE','ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9914002', name:'TKQC Beta 02', tasks:['ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9914003', name:'TKQC Beta 03', tasks:['DRAFT'], status:2 },
+            ]},
+          ],
+          3: [ // Леха Незайкин (id:3)
+            { groupId:'bm-opis', groupName:'Opis - 232426850964605', groupBmId:'232426850964605', accounts:[
+              { actId:'9916001', name:'TKQC Alpha X1', tasks:['ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9916002', name:'TKQC Alpha X2', tasks:['ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9916003', name:'TKQC Alpha X3', tasks:['ANALYZE'], status:1 },
+              { actId:'9916004', name:'TKQC Alpha X4', tasks:['MANAGE','ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9916005', name:'TKQC Alpha X5', tasks:['ADVERTISE','ANALYZE'], status:2 },
+            ]},
+            { groupId:'bm-julia', groupName:'Julia 2 FULL', groupBmId:'773086343098659', accounts:[
+              { actId:'9917001', name:'TKQC Delta 01', tasks:['ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9917002', name:'TKQC Delta 02', tasks:['MANAGE','ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9917003', name:'TKQC Delta 03', tasks:['ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9917004', name:'TKQC Delta 04', tasks:['DRAFT'], status:1 },
+            ]},
+          ],
+          4: [ // Tao Bai Bai (id:4)
+            { groupId:'bm-thang', groupName:'THẮNG CS01', groupBmId:'1353345999856117', accounts:[
+              { actId:'9919001', name:'TKQC Eps 01', tasks:['ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9919002', name:'TKQC Eps 02', tasks:['MANAGE','ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9919003', name:'TKQC Eps 03', tasks:['ADVERTISE','ANALYZE'], status:1 },
+              { actId:'9919004', name:'TKQC Eps 04', tasks:['ANALYZE'], status:1 },
+              { actId:'9919005', name:'TKQC Eps 05', tasks:['DRAFT'], status:2 },
+            ]},
+          ],
+        },
         // Fanpage tab state
         fpSearch: '',
         fanpages: [
@@ -2796,6 +3412,36 @@
           return n && i && s;
         });
       },
+      rvFilteredViaList() {
+        const q = this.rvViaSearch.toLowerCase();
+        if (!q) return this.okVias;
+        return this.okVias.filter(v => v.name.toLowerCase().includes(q) || v.uid.includes(q));
+      },
+      rvCurrentGroups() {
+        if (!this.rvSelectedVia) return [];
+        const raw = this.rvRelationMap[this.rvSelectedVia.id] || [];
+        const removed = this.rvRemovedIds;
+        return raw.map(g => ({
+          ...g,
+          accounts: g.accounts.filter(a => !removed[a.actId])
+        })).filter(g => g.accounts.length > 0);
+      },
+      rvTotalTkqc() {
+        return this.rvCurrentGroups.reduce((s, g) => s + g.accounts.length, 0);
+      },
+      rvCheckedCount() {
+        return Object.values(this.rvChecked).filter(Boolean).length;
+      },
+      rvCheckedAccList() {
+        const ids = this.rvChecked;
+        const list = [];
+        this.rvCurrentGroups.forEach(g => g.accounts.forEach(a => { if (ids[a.actId]) list.push(a); }));
+        return list;
+      },
+      rvTimeStr() {
+        const d = new Date();
+        return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0') + ' ' + d.getDate().toString().padStart(2,'0') + '/' + (d.getMonth()+1).toString().padStart(2,'0') + '/' + d.getFullYear();
+      },
       filteredFanpages() {
         const q = this.fpSearch.toLowerCase();
         if (!q) return this.fanpages;
@@ -2830,6 +3476,24 @@
       },
       setTaoBmPerm(bmId, perm) {
         this.taoBmPermLevel[bmId] = perm;
+      },
+      // ── Revoke panel methods ──
+      rvToggleGroup(groupId) {
+        this.rvOpenGroups[groupId] = this.rvOpenGroups[groupId] === false ? true : false;
+      },
+      rvToggleGroupAll(group) {
+        const allIn = group.accounts.every(a => this.rvChecked[a.actId]);
+        group.accounts.forEach(a => { this.rvChecked[a.actId] = !allIn; });
+      },
+      rvDoRevoke(actId) {
+        this.rvRemovedIds[actId] = true;
+        delete this.rvChecked[actId];
+      },
+      rvDoBulkRevoke() {
+        Object.keys(this.rvChecked).forEach(id => {
+          if (this.rvChecked[id]) { this.rvRemovedIds[id] = true; }
+        });
+        this.rvChecked = {};
       },
     },
   }).mount('#app');
