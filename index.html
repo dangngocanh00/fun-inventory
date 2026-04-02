@@ -2069,30 +2069,120 @@
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
                   Cấu hình quyền chia sẻ
                 </div>
-                <div class="cfg-label" style="margin-bottom:8px;">Quyền áp dụng</div>
-                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-                  <label :style="{ display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', cursor:'pointer', padding:'8px 16px', border: svPermLevel==='full' ? '2px solid var(--accent)' : '1px solid var(--border)', borderRadius:'8px', background: svPermLevel==='full' ? '#eff6ff' : 'white', fontWeight: svPermLevel==='full' ? '600' : '400', color: svPermLevel==='full' ? 'var(--accent)' : 'var(--text-secondary)' }">
-                    <input type="radio" value="full" v-model="svPermLevel" style="accent-color:var(--accent);" />
-                    Full control
-                  </label>
-                  <label :style="{ display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', cursor:'pointer', padding:'8px 16px', border: svPermLevel==='partial' ? '2px solid var(--accent)' : '1px solid var(--border)', borderRadius:'8px', background: svPermLevel==='partial' ? '#eff6ff' : 'white', fontWeight: svPermLevel==='partial' ? '600' : '400', color: svPermLevel==='partial' ? 'var(--accent)' : 'var(--text-secondary)' }">
-                    <input type="radio" value="partial" v-model="svPermLevel" style="accent-color:var(--accent);" />
-                    Partial access
-                  </label>
-                </div>
-                <div v-if="svPermLevel==='partial'" style="padding:12px 16px; background:#f8fafc; border:1px solid var(--border); border-radius:8px;">
-                  <div class="cfg-label" style="margin-bottom:6px;">Chọn quyền cụ thể:</div>
-                  <div style="display:flex; flex-direction:column; gap:6px;">
-                    <label v-for="sub in [{v:'manage_campaigns',l:'Manage campaigns'},{v:'view_performance',l:'View performance'},{v:'manage_mockups',l:'Manage mockups in Creative Hub'}]" :key="sub.v"
-                           style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
-                      <input type="checkbox" :value="sub.v" v-model="svPartialPerms" style="accent-color:var(--accent);" />
-                      {{ sub.l }}
-                    </label>
+
+                <!-- Chế độ phân quyền -->
+                <div class="cfg-label" style="margin-bottom:8px;">Chế độ phân quyền</div>
+                <div class="radio-group" style="margin-bottom:16px;">
+                  <div :class="['radio-card', svPermScope==='global'?'radio-active':'']" @click="svPermScope='global'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
+                    Global
+                  </div>
+                  <div :class="['radio-card', svPermScope==='per-via'?'radio-active':'']" @click="svPermScope='per-via'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    Per-Via
+                  </div>
+                  <div :class="['radio-card', svPermScope==='per-tkqc'?'radio-active':'']" @click="svPermScope='per-tkqc'">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    Per-TKQC
                   </div>
                 </div>
-                <div v-else style="padding:10px 0; font-size:12.5px; color:#64748b;">
-                  Full control bao gồm tất cả quyền: quản lý chiến dịch, xem hiệu suất, quản lý mockup.
+                <div style="font-size:12px; color:#94a3b8; margin-bottom:14px;">
+                  <span v-if="svPermScope==='global'">1 bộ quyền áp dụng đồng nhất cho tất cả TKQC × Via đích. Đơn giản nhất.</span>
+                  <span v-if="svPermScope==='per-via'">Mỗi Via đích có mức quyền riêng. Mọi TKQC share vào Via đó đều dùng quyền đó.</span>
+                  <span v-if="svPermScope==='per-tkqc'">Mỗi TKQC có mức quyền riêng, áp dụng cho mọi Via đích nhận nó. Chi tiết nhất.</span>
                 </div>
+
+                <!-- ══ Global: chọn 1 mức quyền ══ -->
+                <div v-if="svPermScope==='global'">
+                  <div class="cfg-label" style="margin-bottom:8px;">Chọn mức quyền</div>
+                  <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+                    <div v-for="p in svPermPresets" :key="p.key" :style="{
+                      padding:'12px 16px', borderRadius:'10px', cursor:'pointer', transition:'all .15s',
+                      border: svPermPreset===p.key ? '2px solid var(--accent)' : '1px solid var(--border)',
+                      background: svPermPreset===p.key ? '#f0fdf4' : 'white'
+                    }" @click="svPermPreset=p.key; svPermTasks=p.tasks.slice()">
+                      <div style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                        <input type="radio" :value="p.key" v-model="svPermPreset" style="accent-color:var(--accent); flex-shrink:0;" />
+                        <div style="font-weight:600; font-size:13.5px;" :style="{color: svPermPreset===p.key ? 'var(--accent)' : 'var(--text-primary)'}">{{ p.label }}</div>
+                        <div style="display:flex; gap:4px; margin-left:auto; flex-wrap:wrap;">
+                          <span v-for="t in p.tasks" :key="t" class="tpl-var" :style="{background: t==='MANAGE'?'#dcfce7':t==='ADVERTISE'?'#dbeafe':t==='ANALYZE'?'#fef3c7':'#f1f5f9', color: t==='MANAGE'?'#16a34a':t==='ADVERTISE'?'#2563eb':t==='ANALYZE'?'#d97706':'#475569'}">{{ t }}</span>
+                          <span v-if="p.key==='draft'" style="font-size:10px; color:#f59e0b; font-weight:500; background:#fef3c7; padding:1px 6px; border-radius:3px;">Undocumented</span>
+                        </div>
+                      </div>
+                      <div style="font-size:12px; color:#64748b; padding-left:24px;">{{ p.desc }}</div>
+                    </div>
+                  </div>
+
+                  <!-- Tóm tắt -->
+                  <div style="padding:10px 14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; font-size:12.5px; color:#166534; display:flex; align-items:flex-start; gap:8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0; margin-top:1px;"><polyline points="20 6 9 17 4 12"/></svg>
+                    <div><strong>permitted_tasks sẽ gửi:</strong> <span v-for="t in svPermTasks" :key="t" class="tpl-var" style="margin-left:4px;">{{ t }}</span></div>
+                  </div>
+                </div>
+
+                <!-- ══ Per-Via: bảng Via đích + chọn quyền ══ -->
+                <div v-if="svPermScope==='per-via'">
+                  <div class="cfg-label" style="margin-bottom:8px;">Chọn mức quyền cho từng Via đích</div>
+                  <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border); max-height:300px; overflow-y:auto;">
+                    <table class="dt">
+                      <thead>
+                        <tr>
+                          <th style="width:40px; text-align:center;">STT</th>
+                          <th style="min-width:180px;">Via đích (ID)</th>
+                          <th style="min-width:240px;">Mức quyền</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(vid, vi) in svTargetViasInput.split(/[,\n]+/).filter(s=>s.trim())" :key="'pv-'+vi">
+                          <td style="text-align:center; color:#94a3b8;">{{ vi + 1 }}</td>
+                          <td><span class="mono" style="color:#3b82f6; font-size:12px;">{{ vid.trim() }}</span></td>
+                          <td>
+                            <select class="fs" style="min-width:220px;">
+                              <option value="admin">Ad Account Admin (MANAGE, ADVERTISE, ANALYZE)</option>
+                              <option value="advertiser" selected>Advertiser (ADVERTISE, ANALYZE)</option>
+                              <option value="analyst">Analyst (ANALYZE)</option>
+                              <option value="draft">Draft (DRAFT)</option>
+                            </select>
+                          </td>
+                        </tr>
+                        <tr v-if="!svTargetViasInput.trim()">
+                          <td colspan="3" style="text-align:center; color:#94a3b8; padding:20px;">Chưa nhập Via đích. Quay lại bước 4 để thêm.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- ══ Per-TKQC: bảng TKQC + chọn quyền ══ -->
+                <div v-if="svPermScope==='per-tkqc'">
+                  <div class="cfg-label" style="margin-bottom:8px;">Chọn mức quyền cho từng TKQC</div>
+                  <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border); max-height:300px; overflow-y:auto;">
+                    <table class="dt">
+                      <thead>
+                        <tr>
+                          <th style="min-width:180px;">TKQC</th>
+                          <th style="min-width:130px;">ID</th>
+                          <th style="min-width:240px;">Mức quyền</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="acc in svSourceAccs.filter(a=>a.status==='active')" :key="'pt-'+acc.id">
+                          <td style="font-weight:500;">{{ acc.name }}</td>
+                          <td><span class="mono" style="color:#3b82f6;">{{ acc.accountId }}</span></td>
+                          <td>
+                            <select class="fs" style="min-width:220px;">
+                              <option value="admin">Ad Account Admin (MANAGE, ADVERTISE, ANALYZE)</option>
+                              <option value="advertiser" selected>Advertiser (ADVERTISE, ANALYZE)</option>
+                              <option value="analyst">Analyst (ANALYZE)</option>
+                              <option value="draft">Draft (DRAFT)</option>
+                            </select>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
                 <div class="step-footer">
                   <button class="btn btn-ghost" @click="svStep=4">Quay lại</button>
                   <button class="btn btn-green" @click="svStep=6">Tiếp tục</button>
@@ -2545,8 +2635,15 @@
         svBmFilter: '',
         svAccFilter: '',
         svTargetViasInput: '',
-        svPermLevel: 'partial',
-        svPartialPerms: ['manage_campaigns','view_performance'],
+        svPermScope: 'global',
+        svPermPreset: 'advertiser',
+        svPermTasks: ['ADVERTISE','ANALYZE'],
+        svPermPresets: [
+          { key:'admin', label:'Ad Account Admin', tasks:['MANAGE','ADVERTISE','ANALYZE'], desc:'Quản lý mọi khía cạnh: chiến dịch, báo cáo, lập hóa đơn, quyền tài khoản, đặt giới hạn chi tiêu, liên kết phương thức thanh toán.' },
+          { key:'advertiser', label:'Advertiser', tasks:['ADVERTISE','ANALYZE'], desc:'Xem và chỉnh sửa quảng cáo, thiết lập quảng cáo bằng phương thức thanh toán được liên kết với tài khoản.' },
+          { key:'analyst', label:'Analyst', tasks:['ANALYZE'], desc:'Chỉ xem hiệu quả quảng cáo (báo cáo, thống kê). Không thể chỉnh sửa hay tạo quảng cáo.' },
+          { key:'draft', label:'Draft', tasks:['DRAFT'], desc:'Chỉ tạo/lưu quảng cáo dạng nháp. Không được phép publish/activate. Tồn tại trong API endpoint nhưng không có tài liệu chính thức từ Facebook.' },
+        ],
         svDelay: 1200,
         svParallel: 1,
         svMaxRetries: 3,
