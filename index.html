@@ -706,6 +706,25 @@
         </button>
       </div>
 
+      <!-- Section: Tổng quan -->
+      <div v-if="sidebarOpen" style="font-size:10px; font-weight:700; color:rgba(255,255,255,0.35); letter-spacing:1.5px; text-transform:uppercase; padding:10px 16px 4px;">Tổng quan</div>
+
+      <!-- Dashboard -->
+      <div :class="['sb-nav-item', activeModule === 'dashboard' ? 'is-active' : '']"
+           @click="activeModule = 'dashboard'; sidebarOpen = true">
+        <div class="sb-nav-icon">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+          </svg>
+        </div>
+        <span class="sb-nav-label">Dashboard</span>
+        <span class="sb-tooltip">Dashboard</span>
+      </div>
+
+      <!-- Section: Tài sản -->
+      <div v-if="sidebarOpen" style="font-size:10px; font-weight:700; color:rgba(255,255,255,0.35); letter-spacing:1.5px; text-transform:uppercase; padding:10px 16px 4px;">Tài sản</div>
+
       <!-- Tài sản -->
       <div :class="['sb-nav-item', activeModule === 'taisản' ? 'is-active' : '']"
            @click="activeModule = 'taisản'; sidebarOpen = true">
@@ -719,17 +738,35 @@
         <span class="sb-tooltip">Tài sản</span>
       </div>
 
-      <!-- Tác vụ với TKQC -->
-      <div :class="['sb-nav-item', activeModule === 'tacvu-tkqc' ? 'is-active' : '']"
-           @click="activeModule = 'tacvu-tkqc'; sidebarOpen = true">
+      <!-- Section: Lệnh Bot -->
+      <div v-if="sidebarOpen" style="font-size:10px; font-weight:700; color:rgba(255,255,255,0.35); letter-spacing:1.5px; text-transform:uppercase; padding:10px 16px 4px;">Lệnh Bot</div>
+
+      <!-- Lệnh Bot (Dropdown) -->
+      <div :class="['sb-nav-item', activeLenhBot ? 'is-active' : '']"
+           @click="sidebarOpen = true; lenhBotOpen = !lenhBotOpen">
         <div class="sb-nav-icon">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            <rect x="3" y="11" width="18" height="10" rx="2"/>
+            <circle cx="12" cy="5" r="2"/><path d="M12 7v4"/>
+            <line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>
           </svg>
         </div>
-        <span class="sb-nav-label">Tác vụ với TKQC</span>
-        <span class="sb-tooltip">Tác vụ với TKQC</span>
+        <span class="sb-nav-label">Lệnh Bot</span>
+        <svg v-if="sidebarOpen" :class="['sb-arrow', lenhBotOpen ? 'open' : '']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        <span class="sb-tooltip">Lệnh Bot</span>
       </div>
+      <!-- Lệnh Bot sub items -->
+      <div class="sb-dropdown-children" :style="{ maxHeight: (lenhBotOpen && sidebarOpen) ? '640px' : '0', opacity: (lenhBotOpen && sidebarOpen) ? 1 : 0 }">
+        <div v-for="(cmd, key) in lenhBotCmds" :key="key"
+             :class="['sb-sub-item', activeModule === key ? 'is-active' : '']"
+             @click="activeModule = key">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          {{ cmd.label }}
+        </div>
+      </div>
+
+      <!-- Section: Hệ thống -->
+      <div v-if="sidebarOpen" style="font-size:10px; font-weight:700; color:rgba(255,255,255,0.35); letter-spacing:1.5px; text-transform:uppercase; padding:10px 16px 4px;">Hệ thống</div>
 
       <!-- Người dùng & Phân quyền (Dropdown) -->
       <div :class="['sb-nav-item', (activeModule === 'users' || activeModule === 'permissions') ? 'is-active' : '']"
@@ -782,7 +819,7 @@
 
         <!-- Page title -->
         <div style="font-size:15px; font-weight:600; color:white; letter-spacing:-0.2px; white-space:nowrap;">
-          {{ {'taisản':'Quản lý tài sản','tacvu-tkqc':'Tác vụ với TKQC','users':'Người dùng','permissions':'Phân quyền'}[activeModule] || 'Bảng điều khiển' }}
+          {{ ({'dashboard':'Dashboard','taisản':'Quản lý tài sản','users':'Người dùng','permissions':'Phân quyền'})[activeModule] || (activeLenhBot ? activeLenhBot.label : 'Bảng điều khiển') }}
         </div>
 
         <div style="flex:1;"></div>
@@ -905,6 +942,7 @@
                       <th style="width:38px; text-align:center;">Chọn</th>
                       <th style="width:40px; text-align:center;">STT</th>
                       <th style="min-width:195px;">Thông tin Via</th>
+                      <th style="min-width:130px;">ID ADspower</th>
                       <th style="min-width:215px;">Thông tin BM</th>
                       <th style="width:46px; text-align:center;">2FA</th>
                       <th style="width:58px; text-align:center;">Token</th>
@@ -931,6 +969,10 @@
                             <div class="mono" style="color:#94a3b8;">U ID:{{ via.uid }}</div>
                           </div>
                         </div>
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <span v-if="via.adsPowerId" class="mono" style="font-size:12px; color:#3b82f6; font-weight:500;">{{ via.adsPowerId }}</span>
+                        <span v-else style="color:#cbd5e1; font-size:12px;">—</span>
                       </td>
                       <td style="vertical-align:top; padding-top:12px;">
                         <div v-if="via.bms && via.bms.length">
@@ -1114,16 +1156,41 @@
                       <option v-for="bm in allBMs" :key="bm.id" :value="bm.id">{{ bm.name }}</option>
                     </select>
                   </div>
+                  <div style="min-width:130px; max-width:160px;">
+                    <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Trạng thái kho</div>
+                    <select class="fs" v-model="tkqcFilterKho">
+                      <option value="all">Tất cả</option>
+                      <option value="rảnh">Rảnh</option>
+                      <option value="đang cho thuê">Đang cho thuê</option>
+                      <option value="dừng cho thuê">Dừng cho thuê</option>
+                    </select>
+                  </div>
                 </div>
                 <div style="display:flex; align-items:flex-end; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
                   <div style="min-width:180px; max-width:220px;">
                     <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Khoảng thời gian</div>
                     <input class="fi" type="text" placeholder="Chọn khoảng thời gian" v-model="tkqcFilterDate" onfocus="(this.type='date')" onblur="(this.value?'':this.type='text')" />
                   </div>
-                  <button @click="tkqcFilterName=''; tkqcFilterId=''; tkqcFilterStatus='all'; tkqcFilterConnection='all'; tkqcFilterToken='all'; tkqcFilterBM='all'; tkqcFilterDate='';"
+                  <button @click="tkqcFilterName=''; tkqcFilterId=''; tkqcFilterStatus='all'; tkqcFilterConnection='all'; tkqcFilterToken='all'; tkqcFilterBM='all'; tkqcFilterDate=''; tkqcFilterKho='all';"
                           style="font-size:12.5px; color:#64748b; background:none; border:none; cursor:pointer; text-decoration:underline; white-space:nowrap; padding-bottom:2px;">
                     Đặt lại bộ lọc
                   </button>
+                </div>
+
+                <!-- Stats kho -->
+                <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+                  <div style="padding:7px 14px; border-radius:8px; background:#d1fae5; color:#059669; font-size:12.5px; display:flex; align-items:center; gap:6px;">
+                    <span style="width:8px; height:8px; border-radius:50%; background:#059669;"></span>
+                    Rảnh: <strong>{{ tkqcKhoStats['rảnh'] }}</strong>
+                  </div>
+                  <div style="padding:7px 14px; border-radius:8px; background:#fed7aa; color:#c2410c; font-size:12.5px; display:flex; align-items:center; gap:6px;">
+                    <span style="width:8px; height:8px; border-radius:50%; background:#c2410c;"></span>
+                    Đang cho thuê: <strong>{{ tkqcKhoStats['đang cho thuê'] }}</strong>
+                  </div>
+                  <div style="padding:7px 14px; border-radius:8px; background:#fee2e2; color:#dc2626; font-size:12.5px; display:flex; align-items:center; gap:6px;">
+                    <span style="width:8px; height:8px; border-radius:50%; background:#dc2626;"></span>
+                    Dừng cho thuê: <strong>{{ tkqcKhoStats['dừng cho thuê'] }}</strong>
+                  </div>
                 </div>
 
                 <!-- Table -->
@@ -1138,6 +1205,7 @@
                         <th style="min-width:145px;">ID tài khoản</th>
                         <th style="min-width:250px;">Thông tin via/bm</th>
                         <th style="min-width:95px;">Trạng thái</th>
+                        <th style="min-width:110px;">Trạng thái kho</th>
                         <th style="min-width:75px;">Số dư</th>
                         <th style="min-width:120px;">Trạng thái kết nối</th>
                         <th style="width:70px;">Tiền tệ</th>
@@ -1178,6 +1246,14 @@
                           <span :class="['badge', acc.status === 'active' ? 'bg-green' : 'bg-red']">
                             {{ acc.status === 'active' ? 'Hoạt động' : 'Vô hiệu hóa' }}
                           </span>
+                        </td>
+                        <td style="vertical-align:middle;">
+                          <span :style="{
+                              display:'inline-flex', alignItems:'center', gap:'4px',
+                              padding:'3px 10px', borderRadius:'20px', fontSize:'12px', fontWeight:500,
+                              background: acc.khoStatus==='rảnh' ? '#d1fae5' : acc.khoStatus==='đang cho thuê' ? '#fed7aa' : '#fee2e2',
+                              color:      acc.khoStatus==='rảnh' ? '#059669' : acc.khoStatus==='đang cho thuê' ? '#c2410c' : '#dc2626'
+                            }">{{ acc.khoStatus }}</span>
                         </td>
                         <td style="vertical-align:middle; font-weight:600; color:var(--text-primary);">
                           ${{ acc.balance }}
@@ -1262,7 +1338,16 @@
                     <option v-for="via in vias" :key="via.id" :value="via.id">{{ via.name }}</option>
                   </select>
                 </div>
-                <button @click="bmFilterName=''; bmFilterId=''; bmFilterStatus='all'; bmFilterVia='all';"
+                <div style="min-width:130px; max-width:160px;">
+                  <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Trạng thái kho</div>
+                  <select class="fs" v-model="bmFilterKho">
+                    <option value="all">Tất cả</option>
+                    <option value="rảnh">Rảnh</option>
+                    <option value="đang cho thuê">Đang cho thuê</option>
+                    <option value="dừng cho thuê">Dừng cho thuê</option>
+                  </select>
+                </div>
+                <button @click="bmFilterName=''; bmFilterId=''; bmFilterStatus='all'; bmFilterVia='all'; bmFilterKho='all';"
                         style="font-size:12.5px; color:#64748b; background:none; border:none; cursor:pointer; text-decoration:underline; white-space:nowrap; padding-bottom:2px;">
                   Đặt lại bộ lọc
                 </button>
@@ -1279,8 +1364,10 @@
                       <th style="min-width:200px;">Tên BM</th>
                       <th style="min-width:160px;">ID BM</th>
                       <th style="min-width:100px;">Trạng thái</th>
+                      <th style="min-width:130px;">Trạng thái kho</th>
                       <th style="min-width:130px;">Trạng thái kết nối</th>
                       <th style="min-width:260px;">Thông tin via/tkqc</th>
+                      <th style="width:120px; text-align:center;">TKQC đang share</th>
                       <th style="min-width:140px;">Ngày tạo</th>
                       <th style="width:100px; text-align:center;">Thao tác</th>
                     </tr>
@@ -1302,6 +1389,14 @@
                         </span>
                       </td>
                       <td style="vertical-align:middle;">
+                        <span :style="{
+                            display:'inline-flex', alignItems:'center', gap:'4px',
+                            padding:'3px 10px', borderRadius:'20px', fontSize:'12px', fontWeight:500,
+                            background: bm.khoStatus==='rảnh' ? '#d1fae5' : bm.khoStatus==='đang cho thuê' ? '#fed7aa' : '#fee2e2',
+                            color:      bm.khoStatus==='rảnh' ? '#059669' : bm.khoStatus==='đang cho thuê' ? '#c2410c' : '#dc2626'
+                          }">{{ bm.khoStatus }}</span>
+                      </td>
+                      <td style="vertical-align:middle;">
                         <span :class="['badge', bm.connection === 'connected' ? 'bg-teal' : bm.connection === 'normal' ? 'bg-blue' : 'bg-red']">
                           {{ bm.connection === 'connected' ? 'Đang kết nối' : bm.connection === 'normal' ? 'Bình thường' : 'Lỗi' }}
                         </span>
@@ -1314,6 +1409,9 @@
                             {{ vi + 1 }}. {{ v }}
                           </div>
                         </div>
+                      </td>
+                      <td style="text-align:center; vertical-align:middle; font-weight:600; color:var(--text-primary);">
+                        {{ bmTkqcShareCount(bm) }}
                       </td>
                       <td style="vertical-align:middle; color:#64748b; font-size:12.5px;">{{ bm.created }}</td>
                       <td style="vertical-align:middle; text-align:center;">
@@ -1366,6 +1464,12 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <input class="fi" placeholder="Tìm kiếm tên hoặc ID page..." v-model="fpSearch" style="padding-left:32px;" />
                   </div>
+                  <select class="fs" v-model="fpFilterKho" style="min-width:150px; max-width:170px;">
+                    <option value="all">Tất cả trạng thái kho</option>
+                    <option value="rảnh">Rảnh</option>
+                    <option value="đang cho thuê">Đang cho thuê</option>
+                    <option value="dừng cho thuê">Dừng cho thuê</option>
+                  </select>
                   <button class="btn btn-ghost">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
                     Làm mới
@@ -1410,6 +1514,7 @@
                         <input type="checkbox" style="width:14px; height:14px; accent-color:var(--accent); cursor:pointer;" />
                       </th>
                       <th style="min-width:220px;">Page</th>
+                      <th style="min-width:130px;">Trạng thái kho</th>
                       <th style="min-width:160px;">Thuộc doanh nghiệp</th>
                       <th style="min-width:120px;">Hạng mục</th>
                       <th style="width:80px; text-align:center;">Số like</th>
@@ -1429,6 +1534,14 @@
                       <td style="vertical-align:middle;">
                         <div style="font-weight:600; font-size:13px; color:var(--text-primary);">{{ fp.name }}</div>
                         <div class="mono" style="color:#94a3b8;">{{ fp.pageId }}</div>
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <span :style="{
+                            display:'inline-flex', alignItems:'center', gap:'4px',
+                            padding:'3px 10px', borderRadius:'20px', fontSize:'12px', fontWeight:500,
+                            background: fp.khoStatus==='rảnh' ? '#d1fae5' : fp.khoStatus==='đang cho thuê' ? '#fed7aa' : '#fee2e2',
+                            color:      fp.khoStatus==='rảnh' ? '#059669' : fp.khoStatus==='đang cho thuê' ? '#c2410c' : '#dc2626'
+                          }">{{ fp.khoStatus }}</span>
                       </td>
                       <td style="vertical-align:middle; font-size:13px; color:var(--text-primary);">{{ fp.business || '—' }}</td>
                       <td style="vertical-align:middle;">
@@ -1475,856 +1588,41 @@
           </div>
         </div>
 
-        <!-- ══ MODULE: TÁC VỤ VỚI TKQC ══ -->
-        <div v-if="activeModule === 'tacvu-tkqc'" class="fade-in">
-          <div style="background:white; border-radius:12px; border:1px solid var(--border); overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
-
-            <!-- Sub-module Tabs -->
-            <div style="display:flex; border-bottom:1px solid var(--border); background:#fafafa;">
-
-              <div class="tab-btn" :class="tvTab==='share' ? 'tab-active':''" @click="tvTab='share'">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-                Share TKQC đến BM
-              </div>
-              <div class="tab-btn" :class="tvTab==='shareVia' ? 'tab-active':''" @click="tvTab='shareVia'">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                Share TKQC đến Via
-              </div>
-              <div class="tab-btn" :class="tvTab==='khang' ? 'tab-active':''" @click="tvTab='khang'">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                Kháng Nghị TKQC
-              </div>
+        <!-- ══ MODULE: DASHBOARD (placeholder) ══ -->
+        <div v-if="activeModule === 'dashboard'" class="fade-in">
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); padding:32px; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+              <div style="font-size:18px; font-weight:700; color:var(--text-primary);">Dashboard</div>
+              <span style="padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:500; background:#f1f5f9; color:#64748b;">Đang phát triển</span>
             </div>
-
-            <!-- ═══ TAB: SHARE TKQC ĐẾN BM ═══ -->
-            <div v-if="tvTab==='share'" style="padding:16px 20px;">
-
-              <!-- Stepper -->
-              <div class="stepper">
-                <div v-for="(s, si) in ['Chọn VIA','BM nguồn','TKQC nguồn','BM đích','Quyền','Xác nhận','Kết quả']" :key="si"
-                     :class="['step-item', shareStep===si+1?'step-active':'', shareStep>si+1?'step-done':'']"
-                     @click="si+1 < shareStep ? shareStep=si+1 : null">
-                  <div class="step-num">
-                    <svg v-if="shareStep>si+1" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span v-else>{{ si+1 }}</span>
-                  </div>
-                  <span style="font-size:12.5px;">{{ s }}</span>
-                  <div v-if="si < 6" :class="['step-line', shareStep>si+1?'step-line-done':'', shareStep===si+1?'step-line-active':'']"></div>
-                </div>
-              </div>
-
-              <!-- Step 1: Chọn VIA -->
-              <div v-if="shareStep===1" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
-                  Chọn VIA thực thi
-                </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Chọn 1 VIA có trạng thái OK. Hệ thống load danh sách BM và TKQC của VIA từ DB.</p>
-                <div style="display:flex; gap:8px; margin-bottom:10px;">
-                  <textarea class="fi" placeholder="Tìm theo tên, FB ID hoặc UID...&#10;Hỗ trợ paste nhiều ID cách nhau bởi dấu phẩy/xuống dòng" v-model="shareViaFilter" rows="1" style="max-width:400px; resize:vertical; min-height:34px;"></textarea>
-                </div>
-                <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border); max-height:320px; overflow-y:auto;">
-                  <table class="dt">
-                    <thead><tr>
-                      <th style="width:38px; text-align:center;"></th>
-                      <th>VIA</th>
-                      <th>FB ID</th>
-                      <th>Số TKQC</th>
-                      <th>Token hết hạn</th>
-                    </tr></thead>
-                    <tbody>
-                      <tr v-for="v in filteredShareVias" :key="v.id"
-                          :style="{ background: shareViaId==v.id ? '#eff6ff' : '', cursor:'pointer' }"
-                          @click="shareViaId = shareViaId==v.id ? '' : v.id">
-                        <td style="text-align:center;">
-                          <input type="radio" name="shareViaSource" :value="v.id" v-model.number="shareViaId"
-                                 style="width:14px; height:14px; accent-color:var(--accent); cursor:pointer;" @click.stop />
-                        </td>
-                        <td>
-                          <div style="display:flex; align-items:center; gap:8px;">
-                            <div class="av" :style="{ background: v.color }">{{ v.initials }}</div>
-                            <div>
-                              <div style="font-weight:500; font-size:13px;">{{ v.name }}</div>
-                              <div class="mono" style="color:#94a3b8;">{{ v.uid }}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td><span class="mono" style="color:#3b82f6;">{{ v.fbId }}</span></td>
-                        <td style="font-weight:600;">{{ v.totalTKQC }}</td>
-                        <td style="font-size:12px; color:#64748b;">{{ v.tokenExp }}</td>
-                      </tr>
-                      <tr v-if="!filteredShareVias.length">
-                        <td colspan="5" style="text-align:center; color:#94a3b8; padding:16px;">Không tìm thấy VIA nào</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div v-if="shareViaId" style="margin-top:8px; font-size:12.5px; color:var(--accent); display:flex; align-items:center; gap:4px;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  Đã chọn: {{ okVias.find(v=>v.id==shareViaId)?.name }} ({{ okVias.find(v=>v.id==shareViaId)?.fbId }})
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-green" :disabled="!shareViaId" @click="shareStep=2; shareBmId=''; shareBmFilter=''">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 2: BM nguồn -->
-              <div v-if="shareStep===2" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-                  Chọn BM nguồn
-                </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Chọn 1 BM nguồn chứa các TKQC cần share. Chỉ được chọn 1 BM.</p>
-                <div v-if="!shareViaBMs.length" style="font-size:13px; color:#f97316; padding:8px 0;">VIA này chưa có BM nào trong DB.</div>
-                <template v-else>
-                  <div style="display:flex; gap:8px; margin-bottom:10px;">
-                    <textarea class="fi" placeholder="Tìm theo tên hoặc ID BM...&#10;Hỗ trợ paste nhiều ID cách nhau bởi dấu phẩy/xuống dòng" v-model="shareBmFilter" rows="1" style="max-width:400px; resize:vertical; min-height:34px;"></textarea>
-                  </div>
-                  <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border); max-height:300px; overflow-y:auto;">
-                    <table class="dt">
-                      <thead><tr>
-                        <th style="width:38px; text-align:center;"></th>
-                        <th>Tên BM</th>
-                        <th>ID</th>
-                      </tr></thead>
-                      <tbody>
-                        <tr v-for="bm in filteredShareBMs" :key="bm.id"
-                            :style="{ background: shareBmId===bm.id ? '#eff6ff' : '', cursor:'pointer' }"
-                            @click="shareBmId = shareBmId===bm.id ? '' : bm.id">
-                          <td style="text-align:center;">
-                            <input type="radio" name="shareBmSource" :value="bm.id" v-model="shareBmId"
-                                   style="width:14px; height:14px; accent-color:var(--accent); cursor:pointer;" @click.stop />
-                          </td>
-                          <td style="font-weight:500;">{{ bm.name }}</td>
-                          <td><span class="mono" style="color:#3b82f6;">{{ bm.id }}</span></td>
-                        </tr>
-                        <tr v-if="!filteredShareBMs.length">
-                          <td colspan="3" style="text-align:center; color:#94a3b8; padding:16px;">Không tìm thấy BM nào</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div v-if="shareBmId" style="margin-top:8px; font-size:12.5px; color:var(--accent); display:flex; align-items:center; gap:4px;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    Đã chọn: {{ shareViaBMs.find(b=>b.id===shareBmId)?.name }} ({{ shareBmId }})
-                  </div>
-                </template>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="shareStep=1">Quay lại</button>
-                  <button class="btn btn-green" :disabled="!shareBmId" @click="shareStep=3">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 3: TKQC nguồn -->
-              <div v-if="shareStep===3" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                  Chọn TKQC nguồn
-                </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">TKQC thuộc BM nguồn đã chọn. Mặc định tất cả Active được chọn. Disabled/Unavailable tự động bỏ chọn.</p>
-                <div style="display:flex; gap:8px; margin-bottom:10px;">
-                  <textarea class="fi" placeholder="Lọc theo tên hoặc ID...&#10;Hỗ trợ paste nhiều ID cách nhau bởi dấu phẩy/xuống dòng" v-model="shareAccFilter" rows="1" style="max-width:400px; resize:vertical; min-height:34px;"></textarea>
-                </div>
-                <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border); max-height:300px; overflow-y:auto;">
-                  <table class="dt">
-                    <thead><tr>
-                      <th style="width:38px; text-align:center;"><input type="checkbox" checked style="width:14px; height:14px; accent-color:var(--accent);" /></th>
-                      <th>Tên TKQC</th><th>ID</th><th>Trạng thái</th>
-                    </tr></thead>
-                    <tbody>
-                      <tr v-for="acc in filteredShareAccs" :key="acc.id">
-                        <td style="text-align:center;"><input type="checkbox" :checked="acc.status==='active'" :disabled="acc.status!=='active'" style="width:14px; height:14px; accent-color:var(--accent);" /></td>
-                        <td style="font-weight:500;">{{ acc.name }}</td>
-                        <td><span class="mono" style="color:#3b82f6;">{{ acc.accountId }}</span></td>
-                        <td><span :class="['badge', acc.status==='active'?'bg-green':'bg-red']">{{ acc.status==='active'?'Active':'Disabled' }}</span></td>
-                      </tr>
-                      <tr v-if="!filteredShareAccs.length">
-                        <td colspan="4" style="text-align:center; color:#94a3b8; padding:16px;">Không tìm thấy TKQC nào</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="shareStep=2">Quay lại</button>
-                  <button class="btn btn-green" @click="shareStep=4">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 4: BM đích -->
-              <div v-if="shareStep===4" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-                  Thêm BM đích
-                </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Nhập ID BM đích. Hỗ trợ paste nhiều ID cách nhau bởi dấu phẩy/xuống dòng. Cảnh báo nếu trùng BM nguồn.</p>
-                <div class="cfg-row">
-                  <div style="flex:1;">
-                    <div class="cfg-label">ID BM đích</div>
-                    <textarea class="fi" v-model="shareTargetBMsInput" rows="3" placeholder="VD: 823041xxx&#10;912345xxx&#10;hoặc 823041xxx, 912345xxx" style="resize:vertical;"></textarea>
-                  </div>
-                </div>
-                <div style="display:flex; gap:8px; margin-bottom:8px;">
-                  <button class="btn btn-ghost">Import CSV</button>
-                </div>
-                <div v-if="shareTargetBMsInput" style="font-size:12.5px; color:#64748b;">
-                  Đã nhập: <strong>{{ shareTargetBMsInput.split(/[,\n]+/).filter(s=>s.trim()).length }}</strong> BM đích
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="shareStep=3">Quay lại</button>
-                  <button class="btn btn-green" @click="shareStep=5">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 5: Quyền -->
-              <div v-if="shareStep===5" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                  Cấu hình quyền chia sẻ
-                </div>
-
-                <!-- Chế độ -->
-                <div class="cfg-label" style="margin-bottom:8px;">Chế độ phân quyền</div>
-                <div class="radio-group" style="margin-bottom:16px;">
-                  <div :class="['radio-card', sharePermMode==='global'?'radio-active':'']" @click="sharePermMode='global'">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/></svg>
-                    Global
-                  </div>
-                  <div :class="['radio-card', sharePermMode==='per-bm'?'radio-active':'']" @click="sharePermMode='per-bm'">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-                    Per-BM
-                  </div>
-                  <div :class="['radio-card', sharePermMode==='per-tkqc'?'radio-active':'']" @click="sharePermMode='per-tkqc'">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                    Per-TKQC
-                  </div>
-                </div>
-
-                <!-- Global: 1 bộ quyền chung -->
-                <template v-if="sharePermMode==='global'">
-                  <div class="cfg-label" style="margin-bottom:8px;">Quyền áp dụng cho tất cả</div>
-                  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-                    <label :style="{ display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', cursor:'pointer', padding:'8px 16px', border: sharePermLevel==='full' ? '2px solid var(--accent)' : '1px solid var(--border)', borderRadius:'8px', background: sharePermLevel==='full' ? '#eff6ff' : 'white', fontWeight: sharePermLevel==='full' ? '600' : '400', color: sharePermLevel==='full' ? 'var(--accent)' : 'var(--text-secondary)' }">
-                      <input type="radio" value="full" v-model="sharePermLevel" style="accent-color:var(--accent);" />
-                      Full control
-                    </label>
-                    <label :style="{ display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', cursor:'pointer', padding:'8px 16px', border: sharePermLevel==='partial' ? '2px solid var(--accent)' : '1px solid var(--border)', borderRadius:'8px', background: sharePermLevel==='partial' ? '#eff6ff' : 'white', fontWeight: sharePermLevel==='partial' ? '600' : '400', color: sharePermLevel==='partial' ? 'var(--accent)' : 'var(--text-secondary)' }">
-                      <input type="radio" value="partial" v-model="sharePermLevel" style="accent-color:var(--accent);" />
-                      Partial access
-                    </label>
-                  </div>
-                  <div v-if="sharePermLevel==='partial'" style="padding:12px 16px; background:#f8fafc; border:1px solid var(--border); border-radius:8px;">
-                    <div class="cfg-label" style="margin-bottom:6px;">Chọn quyền cụ thể:</div>
-                    <div style="display:flex; flex-direction:column; gap:6px;">
-                      <label v-for="sub in [{v:'manage_campaigns',l:'Manage campaigns'},{v:'view_performance',l:'View performance'},{v:'manage_mockups',l:'Manage mockups in Creative Hub'}]" :key="sub.v"
-                             style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
-                        <input type="checkbox" :value="sub.v" v-model="sharePartialPerms" style="accent-color:var(--accent);" />
-                        {{ sub.l }}
-                      </label>
-                    </div>
-                  </div>
-                  <div v-else style="padding:10px 0; font-size:12.5px; color:#64748b;">
-                    Full control bao gồm tất cả quyền: quản lý chiến dịch, xem hiệu suất, quản lý mockup.
-                  </div>
-                </template>
-
-                <!-- Per-BM: bảng BM đích + quyền từng hàng -->
-                <template v-if="sharePermMode==='per-bm'">
-                  <div class="cfg-label" style="margin-bottom:6px;">
-                    Quyền theo từng BM đích
-                    <span style="font-weight:400; color:#94a3b8; font-size:11.5px; margin-left:4px;">— hàng chưa chỉnh sẽ dùng quyền Global</span>
-                  </div>
-                  <div v-if="!parsedTargetBMs.length" style="font-size:13px; color:#f97316; padding:8px 0;">
-                    Chưa nhập BM đích. Quay lại bước 4 để thêm.
-                  </div>
-                  <div v-else style="overflow-x:auto; border-radius:8px; border:1px solid var(--border);">
-                    <table class="dt">
-                      <thead><tr>
-                        <th>BM đích (ID)</th>
-                        <th style="text-align:center; width:120px;">Full control</th>
-                        <th style="text-align:center; width:120px;">Partial access</th>
-                        <th v-if="parsedTargetBMs.some(id=>(shareBmPermLevel[id]||sharePermLevel)==='partial')">Chi tiết partial</th>
-                      </tr></thead>
-                      <tbody>
-                        <tr v-for="bmId in parsedTargetBMs" :key="bmId">
-                          <td><span class="mono" style="font-size:12px; color:#1d4ed8;">{{ bmId }}</span></td>
-                          <td style="text-align:center;">
-                            <input type="radio" :name="'bmPerm_'+bmId" value="full"
-                                   :checked="(shareBmPermLevel[bmId]||sharePermLevel)==='full'"
-                                   @change="shareBmPermLevel[bmId]='full'"
-                                   style="accent-color:var(--accent); cursor:pointer;" />
-                          </td>
-                          <td style="text-align:center;">
-                            <input type="radio" :name="'bmPerm_'+bmId" value="partial"
-                                   :checked="(shareBmPermLevel[bmId]||sharePermLevel)==='partial'"
-                                   @change="shareBmPermLevel[bmId]='partial'"
-                                   style="accent-color:var(--accent); cursor:pointer;" />
-                          </td>
-                          <td v-if="parsedTargetBMs.some(id=>(shareBmPermLevel[id]||sharePermLevel)==='partial')">
-                            <template v-if="(shareBmPermLevel[bmId]||sharePermLevel)==='partial'">
-                              <div style="display:flex; gap:8px; flex-wrap:wrap; font-size:12px;">
-                                <label v-for="sub in [{v:'manage_campaigns',l:'Campaigns'},{v:'view_performance',l:'Performance'},{v:'manage_mockups',l:'Mockups'}]" :key="sub.v"
-                                       style="display:flex; align-items:center; gap:4px; cursor:pointer;">
-                                  <input type="checkbox" :value="sub.v"
-                                         :checked="(shareBmPartialPerms[bmId]||sharePartialPerms).includes(sub.v)"
-                                         @change="toggleBmPartialPerm(bmId, sub.v)"
-                                         style="accent-color:var(--accent);" />
-                                  {{ sub.l }}
-                                </label>
-                              </div>
-                            </template>
-                            <span v-else style="font-size:12px; color:#94a3b8;">—</span>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </template>
-
-                <!-- Per-TKQC: bảng TKQC nguồn + quyền từng hàng -->
-                <template v-if="sharePermMode==='per-tkqc'">
-                  <div class="cfg-label" style="margin-bottom:6px;">
-                    Quyền theo từng TKQC nguồn
-                    <span style="font-weight:400; color:#94a3b8; font-size:11.5px; margin-left:4px;">— hàng chưa chỉnh sẽ dùng quyền Global</span>
-                  </div>
-                  <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border);">
-                    <table class="dt">
-                      <thead><tr>
-                        <th>Tên TKQC</th>
-                        <th>ID</th>
-                        <th style="text-align:center; width:120px;">Full control</th>
-                        <th style="text-align:center; width:120px;">Partial access</th>
-                        <th>Chi tiết partial</th>
-                      </tr></thead>
-                      <tbody>
-                        <tr v-for="acc in shareSourceAccs.filter(a=>a.status==='active')" :key="acc.id">
-                          <td style="font-weight:500; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ acc.name }}</td>
-                          <td><span class="mono" style="font-size:11px; color:#3b82f6;">{{ acc.accountId }}</span></td>
-                          <td style="text-align:center;">
-                            <input type="radio" :name="'tkqcPerm_'+acc.id" value="full"
-                                   :checked="(shareTKQCPermLevel[acc.id]||sharePermLevel)==='full'"
-                                   @change="shareTKQCPermLevel[acc.id]='full'"
-                                   style="accent-color:var(--accent); cursor:pointer;" />
-                          </td>
-                          <td style="text-align:center;">
-                            <input type="radio" :name="'tkqcPerm_'+acc.id" value="partial"
-                                   :checked="(shareTKQCPermLevel[acc.id]||sharePermLevel)==='partial'"
-                                   @change="shareTKQCPermLevel[acc.id]='partial'"
-                                   style="accent-color:var(--accent); cursor:pointer;" />
-                          </td>
-                          <td>
-                            <template v-if="(shareTKQCPermLevel[acc.id]||sharePermLevel)==='partial'">
-                              <div style="display:flex; gap:8px; flex-wrap:wrap; font-size:12px;">
-                                <label v-for="sub in [{v:'manage_campaigns',l:'Campaigns'},{v:'view_performance',l:'Performance'},{v:'manage_mockups',l:'Mockups'}]" :key="sub.v"
-                                       style="display:flex; align-items:center; gap:4px; cursor:pointer;">
-                                  <input type="checkbox" :value="sub.v"
-                                         :checked="(shareTKQCPartialPerms[acc.id]||sharePartialPerms).includes(sub.v)"
-                                         @change="toggleTKQCPartialPerm(acc.id, sub.v)"
-                                         style="accent-color:var(--accent);" />
-                                  {{ sub.l }}
-                                </label>
-                              </div>
-                            </template>
-                            <span v-else style="font-size:12px; color:#94a3b8;">—</span>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </template>
-
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="shareStep=4">Quay lại</button>
-                  <button class="btn btn-green" @click="shareStep=6">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 6: Xác nhận -->
-              <div v-if="shareStep===6" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  Xác nhận và cấu hình chạy
-                </div>
-                <div style="display:flex; gap:14px; margin-bottom:14px; flex-wrap:wrap;">
-                  <div class="stat-mini" style="background:#dbeafe;"><div class="stat-mini-val" style="color:#2563eb;">{{ shareTargetBMsInput.split(/[,\n]+/).filter(s=>s.trim()).length * 2 }}</div><div class="stat-mini-label" style="color:#2563eb;">Tổng ops</div></div>
-                  <div class="stat-mini" style="background:#f1f5f9;"><div class="stat-mini-val" style="color:#475569;">0</div><div class="stat-mini-label" style="color:#475569;">Đã done</div></div>
-                  <div class="stat-mini" style="background:#fef3c7;"><div class="stat-mini-val" style="color:#92400e;">~2 phút</div><div class="stat-mini-label" style="color:#92400e;">ETA</div></div>
-                </div>
-                <div class="cfg-row">
-                  <div style="min-width:140px;">
-                    <div class="cfg-label">Delay (ms)</div>
-                    <input class="fi" type="number" v-model.number="shareDelay" min="500" max="10000" />
-                  </div>
-                  <div style="min-width:100px;">
-                    <div class="cfg-label">Parallelism</div>
-                    <select class="fs" v-model.number="shareParallel"><option v-for="n in 5" :key="n" :value="n">{{ n }}</option></select>
-                  </div>
-                  <div style="min-width:100px;">
-                    <div class="cfg-label">Max Retries</div>
-                    <input class="fi" type="number" v-model.number="shareMaxRetries" min="0" max="5" />
-                  </div>
-                </div>
-                <div style="display:flex; gap:12px; flex-wrap:wrap;">
-                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="checkbox" v-model="shareSkipDone" style="accent-color:var(--accent);" /> Skip done (Resume)</label>
-                  <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;"><input type="checkbox" v-model="shareStopOnError" style="accent-color:var(--accent);" /> Dừng khi lỗi liên tiếp</label>
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="shareStep=5">Quay lại</button>
-                  <button class="btn btn-green" @click="shareStep=7">Xác nhận & Chạy</button>
-                </div>
-              </div>
-
-              <!-- Step 7: Kết quả -->
-              <div v-if="shareStep===7" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                  Kết quả Share TKQC đến BM
-                </div>
-                <div style="display:flex; gap:14px; margin-bottom:14px; flex-wrap:wrap;">
-                  <div class="stat-mini" style="background:#dbeafe;"><div class="stat-mini-val" style="color:#1d4ed8;">0</div><div class="stat-mini-label" style="color:#1d4ed8;">Thành công</div></div>
-                  <div class="stat-mini" style="background:#fee2e2;"><div class="stat-mini-val" style="color:#dc2626;">0</div><div class="stat-mini-label" style="color:#dc2626;">Thất bại</div></div>
-                  <div class="stat-mini" style="background:#f1f5f9;"><div class="stat-mini-val" style="color:#475569;">0</div><div class="stat-mini-label" style="color:#475569;">Đã skip</div></div>
-                </div>
-                <div class="progress-track"><div class="progress-fill" style="width:0%;"></div></div>
-                <div style="margin-top:10px; font-size:12.5px; color:#94a3b8;">Đang chờ kết nối WebSocket...</div>
-                <div class="step-footer">
-                  <button class="btn btn-danger">Dừng job</button>
-                  <button class="btn btn-ghost">Resume</button>
-                  <button class="btn btn-green">Xuất CSV</button>
-                </div>
-              </div>
+            <div style="font-size:13px; color:#64748b; margin-bottom:24px;">Tổng quan hệ thống — các chỉ số và biểu đồ sẽ cập nhật sau.</div>
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; background:#f8fafc; border-radius:10px; border:1px dashed var(--border);">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <div style="margin-top:12px; font-size:13px; color:#94a3b8;">Module này đang được cấu hình. Chi tiết sẽ cập nhật sau.</div>
             </div>
+          </div>
+        </div>
 
-            <!-- ═══ TAB: SHARE TKQC ĐẾN VIA ═══ -->
-            <div v-if="tvTab==='shareVia'" style="padding:16px 20px;">
-
-              <!-- Stepper -->
-              <div class="stepper">
-                <div v-for="(s, si) in ['Chọn VIA nguồn','BM nguồn','TKQC nguồn','Via đích','Quyền','Xác nhận','Kết quả']" :key="si"
-                     :class="['step-item', svStep===si+1?'step-active':'', svStep>si+1?'step-done':'']"
-                     @click="si+1 < svStep ? svStep=si+1 : null">
-                  <div class="step-num">
-                    <svg v-if="svStep>si+1" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span v-else>{{ si+1 }}</span>
-                  </div>
-                  <span style="font-size:12.5px;">{{ s }}</span>
-                  <div v-if="si < 6" :class="['step-line', svStep>si+1?'step-line-done':'', svStep===si+1?'step-line-active':'']"></div>
-                </div>
-              </div>
-
-              <!-- Step 1: Chọn VIA nguồn -->
-              <div v-if="svStep===1" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
-                  Chọn VIA nguồn
-                </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Chọn 1 VIA có trạng thái OK làm nguồn share.</p>
-                <div style="display:flex; gap:8px; margin-bottom:10px;">
-                  <textarea class="fi" placeholder="Tìm theo tên, FB ID hoặc UID...&#10;Hỗ trợ paste nhiều ID cách nhau bởi dấu phẩy/xuống dòng" v-model="svViaFilter" rows="1" style="max-width:400px; resize:vertical; min-height:34px;"></textarea>
-                </div>
-                <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border); max-height:320px; overflow-y:auto;">
-                  <table class="dt">
-                    <thead><tr>
-                      <th style="width:38px; text-align:center;"></th>
-                      <th>VIA</th><th>FB ID</th><th>Số TKQC</th><th>Token hết hạn</th>
-                    </tr></thead>
-                    <tbody>
-                      <tr v-for="v in filteredSvVias" :key="v.id"
-                          :style="{ background: svViaId==v.id ? '#eff6ff' : '', cursor:'pointer' }"
-                          @click="svViaId = svViaId==v.id ? '' : v.id">
-                        <td style="text-align:center;">
-                          <input type="radio" name="svViaSource" :value="v.id" v-model.number="svViaId"
-                                 style="width:14px; height:14px; accent-color:var(--accent); cursor:pointer;" @click.stop />
-                        </td>
-                        <td>
-                          <div style="display:flex; align-items:center; gap:8px;">
-                            <div class="av" :style="{ background: v.color }">{{ v.initials }}</div>
-                            <div>
-                              <div style="font-weight:500; font-size:13px;">{{ v.name }}</div>
-                              <div class="mono" style="color:#94a3b8;">{{ v.uid }}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td><span class="mono" style="color:#3b82f6;">{{ v.fbId }}</span></td>
-                        <td style="font-weight:600;">{{ v.totalTKQC }}</td>
-                        <td style="font-size:12px; color:#64748b;">{{ v.tokenExp }}</td>
-                      </tr>
-                      <tr v-if="!filteredSvVias.length">
-                        <td colspan="5" style="text-align:center; color:#94a3b8; padding:16px;">Không tìm thấy VIA nào</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div v-if="svViaId" style="margin-top:8px; font-size:12.5px; color:var(--accent); display:flex; align-items:center; gap:4px;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  Đã chọn: {{ okVias.find(v=>v.id==svViaId)?.name }} ({{ okVias.find(v=>v.id==svViaId)?.fbId }})
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-green" :disabled="!svViaId" @click="svStep=2; svBmId=''; svBmFilter=''">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 2: BM nguồn -->
-              <div v-if="svStep===2" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-                  Chọn BM nguồn
-                </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Chọn 1 BM nguồn chứa các TKQC cần share.</p>
-                <div v-if="!svViaBMs.length" style="font-size:13px; color:#f97316; padding:8px 0;">VIA này chưa có BM nào trong DB.</div>
-                <template v-else>
-                  <div style="display:flex; gap:8px; margin-bottom:10px;">
-                    <textarea class="fi" placeholder="Tìm theo tên hoặc ID BM...&#10;Hỗ trợ paste nhiều ID" v-model="svBmFilter" rows="1" style="max-width:400px; resize:vertical; min-height:34px;"></textarea>
-                  </div>
-                  <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border); max-height:300px; overflow-y:auto;">
-                    <table class="dt">
-                      <thead><tr><th style="width:38px; text-align:center;"></th><th>Tên BM</th><th>ID</th></tr></thead>
-                      <tbody>
-                        <tr v-for="bm in filteredSvBMs" :key="bm.id"
-                            :style="{ background: svBmId===bm.id ? '#eff6ff' : '', cursor:'pointer' }"
-                            @click="svBmId = svBmId===bm.id ? '' : bm.id">
-                          <td style="text-align:center;">
-                            <input type="radio" name="svBmSource" :value="bm.id" v-model="svBmId"
-                                   style="width:14px; height:14px; accent-color:var(--accent); cursor:pointer;" @click.stop />
-                          </td>
-                          <td style="font-weight:500;">{{ bm.name }}</td>
-                          <td><span class="mono" style="color:#3b82f6;">{{ bm.id }}</span></td>
-                        </tr>
-                        <tr v-if="!filteredSvBMs.length">
-                          <td colspan="3" style="text-align:center; color:#94a3b8; padding:16px;">Không tìm thấy BM nào</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <div v-if="svBmId" style="margin-top:8px; font-size:12.5px; color:var(--accent); display:flex; align-items:center; gap:4px;">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                    Đã chọn: {{ svViaBMs.find(b=>b.id===svBmId)?.name }} ({{ svBmId }})
-                  </div>
-                </template>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="svStep=1">Quay lại</button>
-                  <button class="btn btn-green" :disabled="!svBmId" @click="svStep=3">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 3: TKQC nguồn -->
-              <div v-if="svStep===3" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                  Chọn TKQC nguồn
-                </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">TKQC thuộc BM nguồn đã chọn.</p>
-                <div style="display:flex; gap:8px; margin-bottom:10px;">
-                  <textarea class="fi" placeholder="Lọc theo tên hoặc ID...&#10;Hỗ trợ paste nhiều ID" v-model="svAccFilter" rows="1" style="max-width:400px; resize:vertical; min-height:34px;"></textarea>
-                </div>
-                <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border); max-height:300px; overflow-y:auto;">
-                  <table class="dt">
-                    <thead><tr>
-                      <th style="width:38px; text-align:center;"><input type="checkbox" checked style="width:14px; height:14px; accent-color:var(--accent);" /></th>
-                      <th>Tên TKQC</th><th>ID</th><th>Trạng thái</th>
-                    </tr></thead>
-                    <tbody>
-                      <tr v-for="acc in filteredSvAccs" :key="acc.id">
-                        <td style="text-align:center;"><input type="checkbox" :checked="acc.status==='active'" :disabled="acc.status!=='active'" style="width:14px; height:14px; accent-color:var(--accent);" /></td>
-                        <td style="font-weight:500;">{{ acc.name }}</td>
-                        <td><span class="mono" style="color:#3b82f6;">{{ acc.accountId }}</span></td>
-                        <td><span :class="['badge', acc.status==='active'?'bg-green':'bg-red']">{{ acc.status==='active'?'Active':'Disabled' }}</span></td>
-                      </tr>
-                      <tr v-if="!filteredSvAccs.length">
-                        <td colspan="4" style="text-align:center; color:#94a3b8; padding:16px;">Không tìm thấy TKQC nào</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="svStep=2">Quay lại</button>
-                  <button class="btn btn-green" @click="svStep=4">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 4: Via đích -->
-              <div v-if="svStep===4" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
-                  Chọn Via đích
-                </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Nhập ID Via đích. Hỗ trợ paste nhiều ID cách nhau bởi dấu phẩy/xuống dòng.</p>
-                <div class="cfg-row">
-                  <div style="flex:1;">
-                    <div class="cfg-label">ID Via đích</div>
-                    <textarea class="fi" v-model="svTargetViasInput" rows="3" placeholder="VD: 100076xxx&#10;100006xxx&#10;hoặc 100076xxx, 100006xxx" style="resize:vertical;"></textarea>
-                  </div>
-                </div>
-                <div v-if="svTargetViasInput" style="font-size:12.5px; color:#64748b; margin-top:4px;">
-                  Đã nhập: <strong>{{ svTargetViasInput.split(/[,\n]+/).filter(s=>s.trim()).length }}</strong> Via đích
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="svStep=3">Quay lại</button>
-                  <button class="btn btn-green" @click="svStep=5">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 5: Quyền -->
-              <div v-if="svStep===5" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                  Cấu hình quyền chia sẻ
-                </div>
-                <div class="cfg-label" style="margin-bottom:8px;">Quyền áp dụng</div>
-                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-                  <label :style="{ display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', cursor:'pointer', padding:'8px 16px', border: svPermLevel==='full' ? '2px solid var(--accent)' : '1px solid var(--border)', borderRadius:'8px', background: svPermLevel==='full' ? '#eff6ff' : 'white', fontWeight: svPermLevel==='full' ? '600' : '400', color: svPermLevel==='full' ? 'var(--accent)' : 'var(--text-secondary)' }">
-                    <input type="radio" value="full" v-model="svPermLevel" style="accent-color:var(--accent);" />
-                    Full control
-                  </label>
-                  <label :style="{ display:'flex', alignItems:'center', gap:'6px', fontSize:'13px', cursor:'pointer', padding:'8px 16px', border: svPermLevel==='partial' ? '2px solid var(--accent)' : '1px solid var(--border)', borderRadius:'8px', background: svPermLevel==='partial' ? '#eff6ff' : 'white', fontWeight: svPermLevel==='partial' ? '600' : '400', color: svPermLevel==='partial' ? 'var(--accent)' : 'var(--text-secondary)' }">
-                    <input type="radio" value="partial" v-model="svPermLevel" style="accent-color:var(--accent);" />
-                    Partial access
-                  </label>
-                </div>
-                <div v-if="svPermLevel==='partial'" style="padding:12px 16px; background:#f8fafc; border:1px solid var(--border); border-radius:8px;">
-                  <div class="cfg-label" style="margin-bottom:6px;">Chọn quyền cụ thể:</div>
-                  <div style="display:flex; flex-direction:column; gap:6px;">
-                    <label v-for="sub in [{v:'manage_campaigns',l:'Manage campaigns'},{v:'view_performance',l:'View performance'},{v:'manage_mockups',l:'Manage mockups in Creative Hub'}]" :key="sub.v"
-                           style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
-                      <input type="checkbox" :value="sub.v" v-model="svPartialPerms" style="accent-color:var(--accent);" />
-                      {{ sub.l }}
-                    </label>
-                  </div>
-                </div>
-                <div v-else style="padding:10px 0; font-size:12.5px; color:#64748b;">
-                  Full control bao gồm tất cả quyền: quản lý chiến dịch, xem hiệu suất, quản lý mockup.
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="svStep=4">Quay lại</button>
-                  <button class="btn btn-green" @click="svStep=6">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 6: Xác nhận -->
-              <div v-if="svStep===6" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                  Xác nhận và cấu hình chạy
-                </div>
-                <div style="display:flex; gap:14px; margin-bottom:14px; flex-wrap:wrap;">
-                  <div class="stat-mini" style="background:#dbeafe;"><div class="stat-mini-val" style="color:#2563eb;">{{ svTargetViasInput.split(/[,\n]+/).filter(s=>s.trim()).length * 2 }}</div><div class="stat-mini-label" style="color:#2563eb;">Tổng ops</div></div>
-                  <div class="stat-mini" style="background:#f1f5f9;"><div class="stat-mini-val" style="color:#475569;">0</div><div class="stat-mini-label" style="color:#475569;">Đã done</div></div>
-                  <div class="stat-mini" style="background:#fef3c7;"><div class="stat-mini-val" style="color:#92400e;">~2 phút</div><div class="stat-mini-label" style="color:#92400e;">ETA</div></div>
-                </div>
-                <div class="cfg-row">
-                  <div style="min-width:140px;">
-                    <div class="cfg-label">Delay (ms)</div>
-                    <input class="fi" type="number" v-model.number="svDelay" min="500" max="10000" />
-                  </div>
-                  <div style="min-width:100px;">
-                    <div class="cfg-label">Parallelism</div>
-                    <select class="fs" v-model.number="svParallel"><option v-for="n in 5" :key="n" :value="n">{{ n }}</option></select>
-                  </div>
-                  <div style="min-width:100px;">
-                    <div class="cfg-label">Max Retries</div>
-                    <input class="fi" type="number" v-model.number="svMaxRetries" min="0" max="5" />
-                  </div>
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="svStep=5">Quay lại</button>
-                  <button class="btn btn-green" @click="svStep=7">Xác nhận & Chạy</button>
-                </div>
-              </div>
-
-              <!-- Step 7: Kết quả -->
-              <div v-if="svStep===7" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                  Kết quả Share TKQC đến Via
-                </div>
-                <div style="display:flex; gap:14px; margin-bottom:14px; flex-wrap:wrap;">
-                  <div class="stat-mini" style="background:#dbeafe;"><div class="stat-mini-val" style="color:#1d4ed8;">0</div><div class="stat-mini-label" style="color:#1d4ed8;">Thành công</div></div>
-                  <div class="stat-mini" style="background:#fee2e2;"><div class="stat-mini-val" style="color:#dc2626;">0</div><div class="stat-mini-label" style="color:#dc2626;">Thất bại</div></div>
-                  <div class="stat-mini" style="background:#f1f5f9;"><div class="stat-mini-val" style="color:#475569;">0</div><div class="stat-mini-label" style="color:#475569;">Đã skip</div></div>
-                </div>
-                <div class="progress-track"><div class="progress-fill" style="width:0%;"></div></div>
-                <div style="margin-top:10px; font-size:12.5px; color:#94a3b8;">Đang chờ kết nối WebSocket...</div>
-                <div class="step-footer">
-                  <button class="btn btn-danger">Dừng job</button>
-                  <button class="btn btn-ghost">Resume</button>
-                  <button class="btn btn-green">Xuất CSV</button>
-                </div>
-              </div>
+        <!-- ══ MODULE: LỆNH BOT (shared placeholder) ══ -->
+        <div v-if="activeLenhBot" class="fade-in">
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); padding:32px; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+              <div style="font-size:18px; font-weight:700; color:var(--text-primary);">{{ activeLenhBot.label }}</div>
+              <span class="mono" style="padding:3px 10px; border-radius:6px; font-size:12px; font-weight:500; background:#eff6ff; color:var(--accent);">{{ activeLenhBot.syntax }}</span>
+              <span style="padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:500; background:#f1f5f9; color:#64748b;">Đang phát triển</span>
             </div>
-
-            <!-- ═══ TAB: KHÁNG NGHỊ TKQC ═══ -->
-            <div v-if="tvTab==='khang'" style="padding:16px 20px;">
-
-              <!-- Stepper -->
-              <div class="stepper">
-                <div v-for="(s, si) in ['Chọn VIA','Fetch TKQC','Chọn & Template','Cấu hình','Kết quả']" :key="si"
-                     :class="['step-item', khangStep===si+1?'step-active':'', khangStep>si+1?'step-done':'']"
-                     @click="si+1 < khangStep ? khangStep=si+1 : null">
-                  <div class="step-num">
-                    <svg v-if="khangStep>si+1" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                    <span v-else>{{ si+1 }}</span>
-                  </div>
-                  <span style="font-size:12.5px;">{{ s }}</span>
-                  <div v-if="si < 4" :class="['step-line', khangStep>si+1?'step-line-done':'', khangStep===si+1?'step-line-active':'']"></div>
-                </div>
-              </div>
-
-              <!-- Step 1: Chọn VIA -->
-              <div v-if="khangStep===1" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 10-16 0"/></svg>
-                  Chọn VIA thực thi
-                </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Cần VIA đang đăng nhập Facebook trên tab trình duyệt — internal API dùng cookie của tab đó.</p>
-                <div style="max-width:400px;">
-                  <div class="cfg-label">VIA thực thi</div>
-                  <select class="fs" v-model="khangViaId">
-                    <option value="">— Chọn VIA —</option>
-                    <option v-for="v in okVias" :key="v.id" :value="v.id">{{ v.name }} ({{ v.fbId }})</option>
-                  </select>
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-green" :disabled="!khangViaId" @click="khangStep=2">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 2: Fetch TKQC disabled -->
-              <div v-if="khangStep===2" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                  Fetch TKQC bị disabled
-                </div>
-                <p style="font-size:13px; color:#64748b; margin-bottom:12px;">Hệ thống gọi API lấy owned_ad_accounts với fields account_status + disable_reason. Lọc canAppeal = true.</p>
-                <button class="btn btn-blue" style="margin-bottom:12px;">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
-                  Fetch danh sách TKQC
-                </button>
-                <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border); max-height:300px; overflow-y:auto;">
-                  <table class="dt">
-                    <thead><tr>
-                      <th style="width:38px; text-align:center;"><input type="checkbox" style="width:14px; height:14px; accent-color:var(--accent);" /></th>
-                      <th>Tên TKQC</th><th>ID</th><th>Status</th><th>Lý do disable</th><th>canAppeal</th><th>BM</th>
-                    </tr></thead>
-                    <tbody>
-                      <tr v-for="acc in khangAccounts" :key="acc.id">
-                        <td style="text-align:center;"><input type="checkbox" :disabled="!acc.canAppeal" :checked="acc.canAppeal" style="width:14px; height:14px; accent-color:var(--accent);" /></td>
-                        <td style="font-weight:500;">{{ acc.name }}</td>
-                        <td><span class="mono" style="color:#3b82f6;">{{ acc.actId }}</span></td>
-                        <td><span :class="['badge', acc.statusCode===2?'bg-red':acc.statusCode===100?'bg-amber':'bg-gray']">{{ acc.statusLabel }}</span></td>
-                        <td style="font-size:12px;">{{ acc.disableReason }}</td>
-                        <td style="text-align:center;">
-                          <span v-if="acc.canAppeal" class="badge bg-green">Yes</span>
-                          <span v-else class="badge bg-gray">No</span>
-                        </td>
-                        <td style="font-size:12px; color:#94a3b8;">{{ acc.bmName }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="khangStep=1">Quay lại</button>
-                  <button class="btn btn-green" @click="khangStep=3">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 3: Chọn template -->
-              <div v-if="khangStep===3" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                  Chọn TKQC và template kháng nghị
-                </div>
-                <div class="cfg-label" style="margin-bottom:8px;">Template kháng nghị</div>
-                <div class="radio-group" style="margin-bottom:14px;">
-                  <div :class="['radio-card', khangTemplate==='default'?'radio-active':'']" @click="khangTemplate='default'">Default</div>
-                  <div :class="['radio-card', khangTemplate==='policy'?'radio-active':'']" @click="khangTemplate='policy'">Policy Violation</div>
-                  <div :class="['radio-card', khangTemplate==='unusual'?'radio-active':'']" @click="khangTemplate='unusual'">Unusual Activity</div>
-                  <div :class="['radio-card', khangTemplate==='custom'?'radio-active':'']" @click="khangTemplate='custom'">Custom</div>
-                </div>
-                <div v-if="khangTemplate==='custom'">
-                  <div class="cfg-label">Nội dung kháng nghị (dùng {act_id} làm biến)</div>
-                  <textarea class="fi" v-model="khangCustomText" rows="4" placeholder="Dear Facebook team, I would like to appeal the disabling of my ad account {act_id}..." style="resize:vertical;"></textarea>
-                </div>
-                <div v-else style="background:#f8fafc; border-radius:8px; padding:12px; border:1px solid var(--border);">
-                  <div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:4px;">Preview nội dung:</div>
-                  <div style="font-size:13px; color:#374151;">
-                    <span v-if="khangTemplate==='default'">I believe my ad account {act_id} was disabled by mistake. I have always followed Facebook's advertising policies...</span>
-                    <span v-if="khangTemplate==='policy'">I would like to request a review of ad account {act_id}. I have reviewed the advertising policies and made corrections...</span>
-                    <span v-if="khangTemplate==='unusual'">My ad account {act_id} was flagged for unusual activity. I can confirm all activities were authorized by me...</span>
-                  </div>
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="khangStep=2">Quay lại</button>
-                  <button class="btn btn-green" @click="khangStep=4">Tiếp tục</button>
-                </div>
-              </div>
-
-              <!-- Step 4: Cấu hình & Chạy -->
-              <div v-if="khangStep===4" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  Cấu hình và chạy kháng nghị
-                </div>
-                <div class="cfg-row">
-                  <div style="min-width:160px;">
-                    <div class="cfg-label">Delay giữa mỗi request (ms)</div>
-                    <input class="fi" type="number" v-model.number="khangDelay" min="2000" max="30000" />
-                    <div class="cfg-hint">Khuyến nghị: 5000ms (endpoint nhạy cảm)</div>
-                  </div>
-                  <div style="min-width:160px;">
-                    <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer; margin-top:20px;">
-                      <input type="checkbox" v-model="khangAutoRetry" style="accent-color:var(--accent);" />
-                      Auto-retry khi bị rate limit (chờ 30s)
-                    </label>
-                  </div>
-                </div>
-                <div style="padding:10px 14px; background:#fef3c7; border-radius:8px; font-size:12.5px; color:#92400e; margin-bottom:10px; display:flex; align-items:flex-start; gap:8px;">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0; margin-top:1px;"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                  <div>Gửi appeal thành công <strong>không đảm bảo</strong> TKQC được phục hồi — kết quả do Facebook quyết định, phản hồi qua email trong 1–3 ngày.</div>
-                </div>
-                <div style="display:flex; gap:14px; margin-bottom:14px; flex-wrap:wrap;">
-                  <div class="stat-mini" style="background:#fee2e2;"><div class="stat-mini-val" style="color:#dc2626;">{{ khangAccounts.filter(a=>a.canAppeal).length }}</div><div class="stat-mini-label" style="color:#dc2626;">TKQC cần kháng</div></div>
-                  <div class="stat-mini" style="background:#f1f5f9;"><div class="stat-mini-val" style="color:#475569;">{{ khangDelay / 1000 }}s</div><div class="stat-mini-label" style="color:#475569;">Delay</div></div>
-                </div>
-                <div class="step-footer">
-                  <button class="btn btn-ghost" @click="khangStep=3">Quay lại</button>
-                  <button class="btn btn-green" @click="khangStep=5">Xác nhận & Gửi kháng nghị</button>
-                </div>
-              </div>
-
-              <!-- Step 5: Kết quả -->
-              <div v-if="khangStep===5" class="step-card">
-                <div class="step-card-title">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                  Kết quả kháng nghị
-                </div>
-                <div style="display:flex; gap:14px; margin-bottom:14px; flex-wrap:wrap;">
-                  <div class="stat-mini" style="background:#dbeafe;"><div class="stat-mini-val" style="color:#1d4ed8;">{{ khangResults.filter(r=>r.status==='sent'||r.status==='sent_retry').length }}</div><div class="stat-mini-label" style="color:#1d4ed8;">Đã gửi</div></div>
-                  <div class="stat-mini" style="background:#fee2e2;"><div class="stat-mini-val" style="color:#dc2626;">{{ khangResults.filter(r=>r.status==='failed').length }}</div><div class="stat-mini-label" style="color:#dc2626;">Thất bại</div></div>
-                  <div class="stat-mini" style="background:#f1f5f9;"><div class="stat-mini-val" style="color:#475569;">{{ khangResults.filter(r=>r.status==='skipped').length }}</div><div class="stat-mini-label" style="color:#475569;">Bỏ qua</div></div>
-                </div>
-                <div style="display:flex; gap:8px; margin-bottom:12px;">
-                  <button class="btn btn-green">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Xuất CSV
-                  </button>
-                  <button class="btn btn-ghost" @click="khangStep=1; khangResults=[]">Tạo job mới</button>
-                </div>
-                <div style="overflow-x:auto; border-radius:8px; border:1px solid var(--border);">
-                  <table class="dt">
-                    <thead><tr><th>TKQC</th><th>Act ID</th><th>Trạng thái gửi</th><th>Lỗi</th><th>Thời gian</th></tr></thead>
-                    <tbody>
-                      <tr v-for="r in khangResults" :key="r.actId">
-                        <td style="font-weight:500;">{{ r.name }}</td>
-                        <td><span class="mono" style="color:#3b82f6;">{{ r.actId }}</span></td>
-                        <td><span :class="['badge', r.status==='sent'||r.status==='sent_retry'?'bg-green':r.status==='skipped'?'bg-gray':'bg-red']">{{ r.status }}</span></td>
-                        <td style="font-size:12px; color:#94a3b8;">{{ r.error || '—' }}</td>
-                        <td style="font-size:12px; color:#64748b;">{{ r.ts }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+            <div style="font-size:13px; color:#64748b; margin-bottom:24px;">{{ activeLenhBot.desc }}</div>
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 20px; background:#f8fafc; border-radius:10px; border:1px dashed var(--border);">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5">
+                <rect x="3" y="11" width="18" height="10" rx="2"/>
+                <circle cx="12" cy="5" r="2"/><path d="M12 7v4"/>
+                <line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>
+              </svg>
+              <div style="margin-top:12px; font-size:13px; color:#94a3b8;">Module này đang được cấu hình. Chi tiết sẽ cập nhật sau.</div>
             </div>
-
           </div>
         </div>
 
@@ -2419,11 +1717,11 @@
       const ini  = name => name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
       const vias = [
-        { id:1, name:'Balwant Khushi Ram', fbId:'985686050653049', uid:'100076349899640', bms:[], twofa:false, tokenExp:'30/05/2026 16:03', tokenDays:58, status:'disabled', totalTKQC:1,   created:'31/03/2026' },
-        { id:2, name:'Rinrin Sundari',      fbId:'455541247467830', uid:'100006287882522', bms:[{ name:'Techcu 05397050', id:'185130878819889' },{ name:'BM1 limit 250 chưa tiêu thế live', id:'433779351118700' }], twofa:false, tokenExp:'25/05/2026 15:45', tokenDays:53, status:'ok', totalTKQC:851, created:'26/03/2026' },
-        { id:3, name:'Леха Незайкин',       fbId:'341731794510219', uid:'100004720746421', bms:[{ name:'Opis - 232426850964605', id:'232426850964605' },{ name:'Julia 2 FULL', id:'773086343098659' }], twofa:false, tokenExp:'25/05/2026 15:40', tokenDays:53, status:'ok', totalTKQC:513, created:'26/03/2026' },
-        { id:4, name:'Tao Bai Bai',         fbId:'270680949327953', uid:'100000591450596', bms:[{ name:'THẮNG CS01', id:'1353345999856117' }], twofa:false, tokenExp:'25/05/2026 15:34', tokenDays:53, status:'ok', totalTKQC:7, created:'26/03/2026' },
-        { id:5, name:'Umi Suprihatin',      fbId:'425000552719319', uid:'100000781200983', bms:[{ name:'24/2 Linh BM3', id:'153219434449737' },{ name:'寿光德元农业科技有限公司', id:'154482560954243' },{ name:'长治泰飞家宠宠物公司', id:'177923119619707' }], twofa:false, tokenExp:'25/05/2026 15:28', tokenDays:53, status:'ok', totalTKQC:42, created:'26/03/2026' },
+        { id:1, name:'Balwant Khushi Ram', fbId:'985686050653049', uid:'100076349899640', adsPowerId:'kq9f2a1', bms:[], twofa:false, tokenExp:'30/05/2026 16:03', tokenDays:58, status:'disabled', totalTKQC:1,   created:'31/03/2026' },
+        { id:2, name:'Rinrin Sundari',      fbId:'455541247467830', uid:'100006287882522', adsPowerId:'kq9f2b7', bms:[{ name:'Techcu 05397050', id:'185130878819889' },{ name:'BM1 limit 250 chưa tiêu thế live', id:'433779351118700' }], twofa:false, tokenExp:'25/05/2026 15:45', tokenDays:53, status:'ok', totalTKQC:851, created:'26/03/2026' },
+        { id:3, name:'Леха Незайкин',       fbId:'341731794510219', uid:'100004720746421', adsPowerId:'kq9f2c3', bms:[{ name:'Opis - 232426850964605', id:'232426850964605' },{ name:'Julia 2 FULL', id:'773086343098659' }], twofa:false, tokenExp:'25/05/2026 15:40', tokenDays:53, status:'ok', totalTKQC:513, created:'26/03/2026' },
+        { id:4, name:'Tao Bai Bai',         fbId:'270680949327953', uid:'100000591450596', adsPowerId:'kq9f2d5', bms:[{ name:'THẮNG CS01', id:'1353345999856117' }], twofa:false, tokenExp:'25/05/2026 15:34', tokenDays:53, status:'ok', totalTKQC:7, created:'26/03/2026' },
+        { id:5, name:'Umi Suprihatin',      fbId:'425000552719319', uid:'100000781200983', adsPowerId:'kq9f2e9', bms:[{ name:'24/2 Linh BM3', id:'153219434449737' },{ name:'寿光德元农业科技有限公司', id:'154482560954243' },{ name:'长治泰飞家宠宠物公司', id:'177923119619707' }], twofa:false, tokenExp:'25/05/2026 15:28', tokenDays:53, status:'ok', totalTKQC:42, created:'26/03/2026' },
       ].map(v => ({ ...v, color: rand(colors), initials: ini(v.name), checked: false }));
 
       const adAccounts = [
@@ -2431,7 +1729,8 @@
           id:1, name:'Rafael Gonzalez Soto', type:'—', accountId:'1197393238878807',
           viaInfo:['Rafael Gonzalez Soto - 1668038036'],
           bmInfo:['10fruttidistribuidora - 299264149755941', 'Insignia Store - 1132015993868794'],
-          status:'active', balance:0, connection:'normal', currency:'VND', created:'11/03/2026 14:03', checked:false
+          status:'active', balance:0, connection:'normal', currency:'VND', created:'11/03/2026 14:03', checked:false,
+          khoStatus:'đang cho thuê'
         },
         {
           id:2, name:'17-3-250-Богдан 1-4243', type:'Bm tạo', accountId:'91181835493120',
@@ -2453,15 +1752,57 @@
             'Yonca Demir - 655898420'
           ],
           bmInfo:['10fruttidistribuidora - 299264149755941'],
-          status:'active', balance:0, connection:'normal', currency:'USD', created:'10/03/2026 17:53', checked:false
+          status:'active', balance:0, connection:'normal', currency:'USD', created:'10/03/2026 17:53', checked:false,
+          khoStatus:'dừng cho thuê'
+        },
+        {
+          id:3, name:'RMFA US-RM TEST 3', type:'—', accountId:'act_333',
+          viaInfo:['Rinrin Sundari - 455541247467830'],
+          bmInfo:['Techcu 05397050 - 185130878819889'],
+          status:'active', balance:0, connection:'normal', currency:'USD', created:'12/04/2026 10:00', checked:false,
+          khoStatus:'rảnh'
+        },
+        {
+          id:4, name:'RMFA VN-RM TEST 4', type:'—', accountId:'act_444',
+          viaInfo:['Tao Bai Bai - 270680949327953'],
+          bmInfo:['THẮNG CS01 - 1353345999856117'],
+          status:'active', balance:0, connection:'normal', currency:'VND', created:'12/04/2026 10:05', checked:false,
+          khoStatus:'rảnh'
+        },
+        {
+          id:5, name:'RMFA US-RM TEST 5', type:'—', accountId:'act_555',
+          viaInfo:['Umi Suprihatin - 425000552719319'],
+          bmInfo:['24/2 Linh BM3 - 153219434449737'],
+          status:'disabled', balance:0, connection:'normal', currency:'USD', created:'12/04/2026 10:10', checked:false,
+          khoStatus:'đang cho thuê'
         },
       ];
 
       return {
         sidebarOpen: false,
         menuUserOpen: false,
+        lenhBotOpen: false,
         activeModule: 'taisản',
         activeTab: 'via',
+        lenhBotCmds: {
+          sharetkqc:   { label:'Share TKQC',    syntax:'/sharetkqc',       desc:'Lấy TKQC từ kho, share vào BM đích' },
+          revoketkqc:  { label:'Thu hồi TKQC',  syntax:'/revoketkqc',      desc:'Thu hồi quyền BM đối với TKQC đã share' },
+          scanbm:      { label:'Scan BM',       syntax:'/scanbm',          desc:'Quét toàn bộ tài nguyên trong BM' },
+          checktkqc:   { label:'Check TKQC',    syntax:'/checktkqc',       desc:'Kiểm tra nhanh trạng thái TKQC theo ID' },
+          createdesk:  { label:'Tạo Desk',      syntax:'/createdesk',      desc:'Wizard tạo bộ tài sản đầy đủ cho khách' },
+          replacetkqc: { label:'Replace TKQC',  syntax:'/replacetkqc',     desc:'Thay TKQC cũ bằng TKQC mới từ kho' },
+          renametkqc:  { label:'Rename TKQC',   syntax:'/renametkqc',      desc:'Đổi tên TKQC hàng loạt' },
+          sharepage:   { label:'Share Page',    syntax:'/sharepage',       desc:'Share Fanpage vào BM đích' },
+          revokepage:  { label:'Thu hồi Page',  syntax:'/revokepage',      desc:'Thu hồi quyền BM đối với Fanpage' },
+          renamepage:  { label:'Rename Page',   syntax:'/renamepage',      desc:'Đổi tên Fanpage' },
+          sharepixel:  { label:'Share Pixel',   syntax:'/sharepixel',      desc:'Tạo và share Pixel vào BM đích' },
+          setlimit:    { label:'Set Limit',     syntax:'/setlimit',        desc:'Đặt spending limit cho TKQC' },
+          removelimit: { label:'Remove Limit',  syntax:'/removelimit',     desc:'Gỡ spending limit khỏi TKQC' },
+          createcat:   { label:'Tạo Catalogue', syntax:'/createcatalogue', desc:'Tạo Product Catalogue trong BM' },
+          invitebm:    { label:'Invite BM',     syntax:'/invitebm',        desc:'Mời user/Via vào BM' },
+          lichsu:      { label:'Lịch sử',       syntax:'/lichsu',          desc:'Xem lịch sử các lệnh đã thực thi' },
+          huongdan:    { label:'Hướng dẫn',     syntax:'/huongdan',        desc:'Hướng dẫn sử dụng bot' },
+        },
         filterName:   '',
         filterUid:    '',
         filterStatus: 'all',
@@ -2478,108 +1819,29 @@
         tkqcFilterToken: 'all',
         tkqcFilterBM: 'all',
         tkqcFilterDate: '',
+        tkqcFilterKho: 'all',
         // BM tab state
         bmFilterName: '',
         bmFilterId: '',
         bmFilterStatus: 'all',
         bmFilterVia: 'all',
+        bmFilterKho: 'all',
         bmList: [
-          { id:1, name:'HT 61587543263043 G2', bmId:'1612622229924192', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:31', checked:false },
-          { id:2, name:'HT 61587392610582 G1', bmId:'4228520680734803', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965'], created:'01/04/2026 01:30', checked:false },
-          { id:3, name:'HT 61587141163308 G2', bmId:'1421038349665727', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false },
-          { id:4, name:'HT 61587535793525 G2', bmId:'1214901937492432', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false },
-          { id:5, name:'HT 61587450747987 G3', bmId:'909315744963488',  status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false },
-          { id:6, name:'HT 61587079245891 G2', bmId:'2082353429197683', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Andre | Ruthairat Wisuwannakorn - 760969474','Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false },
-        ],
-        // ══ Tác vụ TKQC — shared
-        tvTab: 'share',
-        // ── Tạo TKQC
-        taoStep: 1,
-        taoViaId: '',
-        taoCount: 5,
-        taoTemplate: '{bm_name}-TKQC-{n}',
-        taoCurrency: '',
-        taoTimezone: '',
-        taoMode: 'keep',
-        taoTargetBMs: '',
-        taoPermLevel: 'partial',
-        taoPartialPerms: ['manage_campaigns','view_performance'],
-        taoBmPermLevel: {},
-        taoBmPartialPerms: {},
-        taoJobOk: 3, taoJobFail: 1, taoJobTotal: 10,
-        taoJobLogs: [
-          { name:'Agency Alpha-TKQC-4', bmName:'Agency Alpha', actId:'act_123456', status:'created', error:'' },
-          { name:'Agency Alpha-TKQC-5', bmName:'Agency Alpha', actId:'act_123457', status:'created', error:'' },
-          { name:'Agency Alpha-TKQC-6', bmName:'Agency Alpha', actId:'act_123458', status:'shared_removed', error:'' },
-          { name:'Agency Alpha-TKQC-7', bmName:'Agency Alpha', actId:'', status:'bm_full', error:'BM đạt giới hạn 250 TKQC' },
-        ],
-        // ── Share TKQC
-        shareStep: 1,
-        shareViaId: '',
-        shareViaFilter: '',
-        shareBmId: '',
-        shareBmFilter: '',
-        shareAccFilter: '',
-        shareTargetBMsInput: '',
-        sharePermMode: 'global',
-        sharePermLevel: 'partial',
-        sharePartialPerms: ['manage_campaigns','view_performance'],
-        shareBmPermLevel: {},
-        shareBmPartialPerms: {},
-        shareTKQCPermLevel: {},
-        shareTKQCPartialPerms: {},
-        shareDelay: 1200,
-        shareParallel: 1,
-        shareMaxRetries: 3,
-        shareSkipDone: true,
-        shareStopOnError: false,
-        shareSourceAccs: [
-          { id:'a1', name:'Rafael Gonzalez Soto', accountId:'1197393238878807', bmName:'10fruttidistribuidora', status:'active' },
-          { id:'a2', name:'17-3-250-Богдан 1-4243', accountId:'91181835493120', bmName:'10fruttidistribuidora', status:'active' },
-        ],
-        // ── Share TKQC đến Via
-        svStep: 1,
-        svViaId: '',
-        svViaFilter: '',
-        svBmId: '',
-        svBmFilter: '',
-        svAccFilter: '',
-        svTargetViasInput: '',
-        svPermLevel: 'partial',
-        svPartialPerms: ['manage_campaigns','view_performance'],
-        svDelay: 1200,
-        svParallel: 1,
-        svMaxRetries: 3,
-        svSourceAccs: [
-          { id:'sv1', name:'Rafael Gonzalez Soto', accountId:'1197393238878807', bmName:'10fruttidistribuidora', status:'active' },
-          { id:'sv2', name:'17-3-250-Богдан 1-4243', accountId:'91181835493120', bmName:'10fruttidistribuidora', status:'active' },
-        ],
-        // ── Kháng nghị TKQC
-        khangStep: 1,
-        khangViaId: '',
-        khangTemplate: 'default',
-        khangCustomText: '',
-        khangDelay: 5000,
-        khangAutoRetry: true,
-        khangAccounts: [
-          { id:'k1', name:'TKQC Test 001', actId:'act_901234', statusCode:2, statusLabel:'Disabled', disableReason:'ADS_INTEGRITY_POLICY', canAppeal:true, bmName:'Agency Alpha' },
-          { id:'k2', name:'TKQC Test 002', actId:'act_901235', statusCode:2, statusLabel:'Disabled', disableReason:'RISK_PAYMENT', canAppeal:true, bmName:'Agency Alpha' },
-          { id:'k3', name:'TKQC Test 003', actId:'act_901236', statusCode:100, statusLabel:'Pending Risk Review', disableReason:'—', canAppeal:true, bmName:'BM Beta' },
-          { id:'k4', name:'TKQC Test 004', actId:'act_901237', statusCode:201, statusLabel:'Closed', disableReason:'PERMANENT_CLOSE', canAppeal:false, bmName:'BM Beta' },
-        ],
-        khangResults: [
-          { actId:'act_901234', name:'TKQC Test 001', status:'sent', error:'', ts:'02/04/2026 10:01' },
-          { actId:'act_901235', name:'TKQC Test 002', status:'sent_retry', error:'Rate limited → retried after 30s', ts:'02/04/2026 10:02' },
-          { actId:'act_901236', name:'TKQC Test 003', status:'failed', error:'[Code 190] Token hết hạn', ts:'02/04/2026 10:03' },
-          { actId:'act_901237', name:'TKQC Test 004', status:'skipped', error:'canAppeal = false', ts:'—' },
+          { id:1, name:'HT 61587543263043 G2', bmId:'1612622229924192', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:31', checked:false, khoStatus:'đang cho thuê' },
+          { id:2, name:'HT 61587392610582 G1', bmId:'4228520680734803', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965'], created:'01/04/2026 01:30', checked:false, khoStatus:'rảnh' },
+          { id:3, name:'HT 61587141163308 G2', bmId:'1421038349665727', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'dừng cho thuê' },
+          { id:4, name:'HT 61587535793525 G2', bmId:'1214901937492432', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'đang cho thuê' },
+          { id:5, name:'HT 61587450747987 G3', bmId:'909315744963488',  status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'rảnh' },
+          { id:6, name:'HT 61587079245891 G2', bmId:'2082353429197683', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Andre | Ruthairat Wisuwannakorn - 760969474','Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'rảnh' },
         ],
         // Fanpage tab state
         fpSearch: '',
+        fpFilterKho: 'all',
         fanpages: [
-          { id:1, name:'LandingPage Lab', pageId:'797327860138704', business:'DA Digital Marketing', category:'Nhà thiết kế web', likes:10, follows:10, verified:false, addedAt:'14:16 25-03-2026', lastSync:'14:16 25-03-2026', addedBy:'Admin', checked:false },
-          { id:2, name:'Nhớ lắm quên sao được 12C thân yêu', pageId:'123092379216788', business:'', category:'Blog cá nhân', likes:93, follows:93, verified:false, addedAt:'14:16 25-03-2026', lastSync:'14:16 25-03-2026', addedBy:'Admin', checked:false },
-          { id:3, name:'Kim Dung', pageId:'189279861480850', business:'BM 50FP RM', category:'Tỉnh/Thành phố', likes:0, follows:0, verified:false, addedAt:'14:16 25-03-2026', lastSync:'14:16 25-03-2026', addedBy:'Admin', checked:false },
-          { id:4, name:'Big Game Now', pageId:'104399038643986', business:'BM 50FP RM', category:'Tỉnh/Thành phố', likes:0, follows:0, verified:false, addedAt:'14:16 25-03-2026', lastSync:'14:16 25-03-2026', addedBy:'Admin', checked:false },
+          { id:1, name:'LandingPage Lab', pageId:'797327860138704', business:'DA Digital Marketing', category:'Nhà thiết kế web', likes:10, follows:10, verified:false, addedAt:'14:16 25-03-2026', lastSync:'14:16 25-03-2026', addedBy:'Admin', checked:false, khoStatus:'đang cho thuê' },
+          { id:2, name:'Nhớ lắm quên sao được 12C thân yêu', pageId:'123092379216788', business:'', category:'Blog cá nhân', likes:93, follows:93, verified:false, addedAt:'14:16 25-03-2026', lastSync:'14:16 25-03-2026', addedBy:'Admin', checked:false, khoStatus:'rảnh' },
+          { id:3, name:'Kim Dung', pageId:'189279861480850', business:'BM 50FP RM', category:'Tỉnh/Thành phố', likes:0, follows:0, verified:false, addedAt:'14:16 25-03-2026', lastSync:'14:16 25-03-2026', addedBy:'Admin', checked:false, khoStatus:'dừng cho thuê' },
+          { id:4, name:'Big Game Now', pageId:'104399038643986', business:'BM 50FP RM', category:'Tỉnh/Thành phố', likes:0, follows:0, verified:false, addedAt:'14:16 25-03-2026', lastSync:'14:16 25-03-2026', addedBy:'Admin', checked:false, khoStatus:'rảnh' },
         ],
         users: [
           { id:1, name:'Nguyễn Văn A', email:'nguyenvana@company.com', role:'Admin',  active:true,  created:'01/01/2024', color:'#2563eb', initials:'NA' },
@@ -2621,88 +1883,34 @@
           const i = !this.tkqcFilterId   || acc.accountId.includes(this.tkqcFilterId);
           const s = this.tkqcFilterStatus === 'all' || acc.status === this.tkqcFilterStatus;
           const c = this.tkqcFilterConnection === 'all' || acc.connection === this.tkqcFilterConnection;
-          return n && i && s && c;
+          const k = this.tkqcFilterKho === 'all' || acc.khoStatus === this.tkqcFilterKho;
+          return n && i && s && c && k;
         });
       },
-      okVias() {
-        return this.vias.filter(v => v.status === 'ok');
+      tkqcKhoStats() {
+        const stats = { 'rảnh':0, 'đang cho thuê':0, 'dừng cho thuê':0 };
+        this.adAccounts.forEach(a => { if (stats[a.khoStatus] !== undefined) stats[a.khoStatus]++; });
+        return stats;
       },
-      filteredShareVias() {
-        const raw = this.shareViaFilter.trim();
-        if (!raw) return this.okVias;
-        const terms = raw.split(/[,\n]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
-        if (!terms.length) return this.okVias;
-        return this.okVias.filter(v => terms.some(t => v.name.toLowerCase().includes(t) || v.fbId.includes(t) || v.uid.includes(t)));
-      },
-      taoViaBMs() {
-        const via = this.vias.find(v => v.id === Number(this.taoViaId));
-        if (!via || !via.bms || !via.bms.length) return [];
-        return via.bms.map(b => ({ ...b, ownedCount: Math.floor(Math.random()*200), creationLimit: 250, verification: 'Verified', full: false }));
-      },
-      shareViaBMs() {
-        const via = this.vias.find(v => v.id === Number(this.shareViaId));
-        if (!via || !via.bms || !via.bms.length) return [];
-        return via.bms;
-      },
-      filteredShareBMs() {
-        const raw = this.shareBmFilter.trim();
-        if (!raw) return this.shareViaBMs;
-        const terms = raw.split(/[,\n]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
-        if (!terms.length) return this.shareViaBMs;
-        return this.shareViaBMs.filter(b => terms.some(t => b.name.toLowerCase().includes(t) || b.id.includes(t)));
-      },
-      filteredShareAccs() {
-        const raw = this.shareAccFilter.trim();
-        if (!raw) return this.shareSourceAccs;
-        const terms = raw.split(/[,\n]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
-        if (!terms.length) return this.shareSourceAccs;
-        return this.shareSourceAccs.filter(a => terms.some(t => a.name.toLowerCase().includes(t) || a.accountId.includes(t)));
-      },
-      parsedTargetBMs() {
-        return this.shareTargetBMsInput.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
-      },
-      // ── Share TKQC đến Via computed
-      filteredSvVias() {
-        const raw = this.svViaFilter.trim();
-        if (!raw) return this.okVias;
-        const terms = raw.split(/[,\n]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
-        if (!terms.length) return this.okVias;
-        return this.okVias.filter(v => terms.some(t => v.name.toLowerCase().includes(t) || v.fbId.includes(t) || v.uid.includes(t)));
-      },
-      svViaBMs() {
-        const via = this.vias.find(v => v.id === Number(this.svViaId));
-        if (!via || !via.bms || !via.bms.length) return [];
-        return via.bms;
-      },
-      filteredSvBMs() {
-        const raw = this.svBmFilter.trim();
-        if (!raw) return this.svViaBMs;
-        const terms = raw.split(/[,\n]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
-        if (!terms.length) return this.svViaBMs;
-        return this.svViaBMs.filter(b => terms.some(t => b.name.toLowerCase().includes(t) || b.id.includes(t)));
-      },
-      filteredSvAccs() {
-        const raw = this.svAccFilter.trim();
-        if (!raw) return this.svSourceAccs;
-        const terms = raw.split(/[,\n]+/).map(s => s.trim().toLowerCase()).filter(Boolean);
-        if (!terms.length) return this.svSourceAccs;
-        return this.svSourceAccs.filter(a => terms.some(t => a.name.toLowerCase().includes(t) || a.accountId.includes(t)));
-      },
-      parsedTaoBMs() {
-        return this.taoTargetBMs.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
+      activeLenhBot() {
+        return this.lenhBotCmds[this.activeModule] || null;
       },
       filteredBMs() {
         return this.bmList.filter(bm => {
           const n = !this.bmFilterName || bm.name.toLowerCase().includes(this.bmFilterName.toLowerCase());
           const i = !this.bmFilterId   || bm.bmId.includes(this.bmFilterId);
           const s = this.bmFilterStatus === 'all' || bm.status === this.bmFilterStatus;
-          return n && i && s;
+          const k = this.bmFilterKho === 'all' || bm.khoStatus === this.bmFilterKho;
+          return n && i && s && k;
         });
       },
       filteredFanpages() {
         const q = this.fpSearch.toLowerCase();
-        if (!q) return this.fanpages;
-        return this.fanpages.filter(fp => fp.name.toLowerCase().includes(q) || fp.pageId.includes(q));
+        return this.fanpages.filter(fp => {
+          const m = !q || fp.name.toLowerCase().includes(q) || fp.pageId.includes(q);
+          const k = this.fpFilterKho === 'all' || fp.khoStatus === this.fpFilterKho;
+          return m && k;
+        });
       },
       totalFpLikes() {
         return this.filteredFanpages.reduce((sum, fp) => sum + fp.likes, 0);
@@ -2712,27 +1920,10 @@
       },
     },
     methods: {
-      toggleBmPartialPerm(bmId, sub) {
-        if (!this.shareBmPartialPerms[bmId]) {
-          this.shareBmPartialPerms[bmId] = [...this.sharePartialPerms];
-        }
-        const arr = this.shareBmPartialPerms[bmId];
-        const idx = arr.indexOf(sub);
-        if (idx >= 0) arr.splice(idx, 1); else arr.push(sub);
-      },
-      toggleTKQCPartialPerm(accId, sub) {
-        if (!this.shareTKQCPartialPerms[accId]) {
-          this.shareTKQCPartialPerms[accId] = [...this.sharePartialPerms];
-        }
-        const arr = this.shareTKQCPartialPerms[accId];
-        const idx = arr.indexOf(sub);
-        if (idx >= 0) arr.splice(idx, 1); else arr.push(sub);
-      },
-      getTaoBmPerm(bmId) {
-        return this.taoBmPermLevel[bmId] !== undefined ? this.taoBmPermLevel[bmId] : this.taoPermLevel;
-      },
-      setTaoBmPerm(bmId, perm) {
-        this.taoBmPermLevel[bmId] = perm;
+      bmTkqcShareCount(bm) {
+        return this.adAccounts.filter(acc =>
+          (acc.bmInfo || []).some(b => b.includes(bm.bmId))
+        ).length;
       },
     },
   }).mount('#app');
