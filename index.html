@@ -229,6 +229,7 @@
     .bg-red    { background: #fee2e2; color: #dc2626; }
     .bg-gray   { background: #f1f5f9; color: #64748b; }
     .bg-amber  { background: #fef3c7; color: #d97706; }
+    .bg-purple { background: #ede9fe; color: #7c3aed; }
 
     /* ── Quyền chạy ── */
     .qc {
@@ -1054,7 +1055,6 @@
                       <th style="width:38px; text-align:center;">Chọn</th>
                       <th style="width:40px; text-align:center;">STT</th>
                       <th style="min-width:195px;">Thông tin Via</th>
-                      <th style="min-width:130px;">ID ADspower</th>
                       <th style="min-width:215px;">Thông tin BM</th>
                       <th style="width:46px; text-align:center;">2FA</th>
                       <th style="width:58px; text-align:center;">Token</th>
@@ -1081,10 +1081,6 @@
                             <div class="mono" style="color:#94a3b8;">U ID:{{ via.uid }}</div>
                           </div>
                         </div>
-                      </td>
-                      <td style="vertical-align:middle;">
-                        <span v-if="via.adsPowerId" class="mono" style="font-size:12px; color:#3b82f6; font-weight:500;">{{ via.adsPowerId }}</span>
-                        <span v-else style="color:#cbd5e1; font-size:12px;">—</span>
                       </td>
                       <td style="vertical-align:top; padding-top:12px;">
                         <div v-if="via.bms && via.bms.length">
@@ -1268,41 +1264,16 @@
                       <option v-for="bm in allBMs" :key="bm.id" :value="bm.id">{{ bm.name }}</option>
                     </select>
                   </div>
-                  <div style="min-width:130px; max-width:160px;">
-                    <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Trạng thái kho</div>
-                    <select class="fs" v-model="tkqcFilterKho">
-                      <option value="all">Tất cả</option>
-                      <option value="rảnh">Rảnh</option>
-                      <option value="đang cho thuê">Đang cho thuê</option>
-                      <option value="dừng cho thuê">Dừng cho thuê</option>
-                    </select>
-                  </div>
                 </div>
                 <div style="display:flex; align-items:flex-end; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
                   <div style="min-width:180px; max-width:220px;">
                     <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Khoảng thời gian</div>
                     <input class="fi" type="text" placeholder="Chọn khoảng thời gian" v-model="tkqcFilterDate" onfocus="(this.type='date')" onblur="(this.value?'':this.type='text')" />
                   </div>
-                  <button @click="tkqcFilterName=''; tkqcFilterId=''; tkqcFilterStatus='all'; tkqcFilterConnection='all'; tkqcFilterToken='all'; tkqcFilterBM='all'; tkqcFilterDate=''; tkqcFilterKho='all';"
+                  <button @click="tkqcFilterName=''; tkqcFilterId=''; tkqcFilterStatus='all'; tkqcFilterConnection='all'; tkqcFilterToken='all'; tkqcFilterBM='all'; tkqcFilterDate='';"
                           style="font-size:12.5px; color:#64748b; background:none; border:none; cursor:pointer; text-decoration:underline; white-space:nowrap; padding-bottom:2px;">
                     Đặt lại bộ lọc
                   </button>
-                </div>
-
-                <!-- Stats kho -->
-                <div style="display:flex; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
-                  <div style="padding:7px 14px; border-radius:8px; background:#d1fae5; color:#059669; font-size:12.5px; display:flex; align-items:center; gap:6px;">
-                    <span style="width:8px; height:8px; border-radius:50%; background:#059669;"></span>
-                    Rảnh: <strong>{{ tkqcKhoStats['rảnh'] }}</strong>
-                  </div>
-                  <div style="padding:7px 14px; border-radius:8px; background:#fed7aa; color:#c2410c; font-size:12.5px; display:flex; align-items:center; gap:6px;">
-                    <span style="width:8px; height:8px; border-radius:50%; background:#c2410c;"></span>
-                    Đang cho thuê: <strong>{{ tkqcKhoStats['đang cho thuê'] }}</strong>
-                  </div>
-                  <div style="padding:7px 14px; border-radius:8px; background:#fee2e2; color:#dc2626; font-size:12.5px; display:flex; align-items:center; gap:6px;">
-                    <span style="width:8px; height:8px; border-radius:50%; background:#dc2626;"></span>
-                    Dừng cho thuê: <strong>{{ tkqcKhoStats['dừng cho thuê'] }}</strong>
-                  </div>
                 </div>
 
                 <!-- Table -->
@@ -1317,7 +1288,6 @@
                         <th style="min-width:145px;">ID tài khoản</th>
                         <th style="min-width:250px;">Thông tin via/bm</th>
                         <th style="min-width:95px;">Trạng thái</th>
-                        <th style="min-width:110px;">Trạng thái kho</th>
                         <th style="min-width:75px;">Số dư</th>
                         <th style="min-width:120px;">Trạng thái kết nối</th>
                         <th style="width:70px;">Tiền tệ</th>
@@ -1358,14 +1328,6 @@
                           <span :class="['badge', acc.status === 'active' ? 'bg-green' : 'bg-red']">
                             {{ acc.status === 'active' ? 'Hoạt động' : 'Vô hiệu hóa' }}
                           </span>
-                        </td>
-                        <td style="vertical-align:middle;">
-                          <span :style="{
-                              display:'inline-flex', alignItems:'center', gap:'4px',
-                              padding:'3px 10px', borderRadius:'20px', fontSize:'12px', fontWeight:500,
-                              background: acc.khoStatus==='rảnh' ? '#d1fae5' : acc.khoStatus==='đang cho thuê' ? '#fed7aa' : '#fee2e2',
-                              color:      acc.khoStatus==='rảnh' ? '#059669' : acc.khoStatus==='đang cho thuê' ? '#c2410c' : '#dc2626'
-                            }">{{ acc.khoStatus }}</span>
                         </td>
                         <td style="vertical-align:middle; font-weight:600; color:var(--text-primary);">
                           ${{ acc.balance }}
@@ -1450,16 +1412,7 @@
                     <option v-for="via in vias" :key="via.id" :value="via.id">{{ via.name }}</option>
                   </select>
                 </div>
-                <div style="min-width:130px; max-width:160px;">
-                  <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Trạng thái kho</div>
-                  <select class="fs" v-model="bmFilterKho">
-                    <option value="all">Tất cả</option>
-                    <option value="rảnh">Rảnh</option>
-                    <option value="đang cho thuê">Đang cho thuê</option>
-                    <option value="dừng cho thuê">Dừng cho thuê</option>
-                  </select>
-                </div>
-                <button @click="bmFilterName=''; bmFilterId=''; bmFilterStatus='all'; bmFilterVia='all'; bmFilterKho='all';"
+                <button @click="bmFilterName=''; bmFilterId=''; bmFilterStatus='all'; bmFilterVia='all';"
                         style="font-size:12.5px; color:#64748b; background:none; border:none; cursor:pointer; text-decoration:underline; white-space:nowrap; padding-bottom:2px;">
                   Đặt lại bộ lọc
                 </button>
@@ -1476,10 +1429,8 @@
                       <th style="min-width:200px;">Tên BM</th>
                       <th style="min-width:160px;">ID BM</th>
                       <th style="min-width:100px;">Trạng thái</th>
-                      <th style="min-width:130px;">Trạng thái kho</th>
                       <th style="min-width:130px;">Trạng thái kết nối</th>
                       <th style="min-width:260px;">Thông tin via/tkqc</th>
-                      <th style="width:120px; text-align:center;">TKQC đang share</th>
                       <th style="min-width:140px;">Ngày tạo</th>
                       <th style="width:100px; text-align:center;">Thao tác</th>
                     </tr>
@@ -1501,14 +1452,6 @@
                         </span>
                       </td>
                       <td style="vertical-align:middle;">
-                        <span :style="{
-                            display:'inline-flex', alignItems:'center', gap:'4px',
-                            padding:'3px 10px', borderRadius:'20px', fontSize:'12px', fontWeight:500,
-                            background: bm.khoStatus==='rảnh' ? '#d1fae5' : bm.khoStatus==='đang cho thuê' ? '#fed7aa' : '#fee2e2',
-                            color:      bm.khoStatus==='rảnh' ? '#059669' : bm.khoStatus==='đang cho thuê' ? '#c2410c' : '#dc2626'
-                          }">{{ bm.khoStatus }}</span>
-                      </td>
-                      <td style="vertical-align:middle;">
                         <span :class="['badge', bm.connection === 'connected' ? 'bg-teal' : bm.connection === 'normal' ? 'bg-blue' : 'bg-red']">
                           {{ bm.connection === 'connected' ? 'Đang kết nối' : bm.connection === 'normal' ? 'Bình thường' : 'Lỗi' }}
                         </span>
@@ -1521,9 +1464,6 @@
                             {{ vi + 1 }}. {{ v }}
                           </div>
                         </div>
-                      </td>
-                      <td style="text-align:center; vertical-align:middle; font-weight:600; color:var(--text-primary);">
-                        {{ bmTkqcShareCount(bm) }}
                       </td>
                       <td style="vertical-align:middle; color:#64748b; font-size:12.5px;">{{ bm.created }}</td>
                       <td style="vertical-align:middle; text-align:center;">
@@ -1576,12 +1516,6 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     <input class="fi" placeholder="Tìm kiếm tên hoặc ID page..." v-model="fpSearch" style="padding-left:32px;" />
                   </div>
-                  <select class="fs" v-model="fpFilterKho" style="min-width:150px; max-width:170px;">
-                    <option value="all">Tất cả trạng thái kho</option>
-                    <option value="rảnh">Rảnh</option>
-                    <option value="đang cho thuê">Đang cho thuê</option>
-                    <option value="dừng cho thuê">Dừng cho thuê</option>
-                  </select>
                   <button class="btn btn-ghost">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
                     Làm mới
@@ -1626,7 +1560,6 @@
                         <input type="checkbox" style="width:14px; height:14px; accent-color:var(--accent); cursor:pointer;" />
                       </th>
                       <th style="min-width:220px;">Page</th>
-                      <th style="min-width:130px;">Trạng thái kho</th>
                       <th style="min-width:160px;">Thuộc doanh nghiệp</th>
                       <th style="min-width:120px;">Hạng mục</th>
                       <th style="width:80px; text-align:center;">Số like</th>
@@ -1646,14 +1579,6 @@
                       <td style="vertical-align:middle;">
                         <div style="font-weight:600; font-size:13px; color:var(--text-primary);">{{ fp.name }}</div>
                         <div class="mono" style="color:#94a3b8;">{{ fp.pageId }}</div>
-                      </td>
-                      <td style="vertical-align:middle;">
-                        <span :style="{
-                            display:'inline-flex', alignItems:'center', gap:'4px',
-                            padding:'3px 10px', borderRadius:'20px', fontSize:'12px', fontWeight:500,
-                            background: fp.khoStatus==='rảnh' ? '#d1fae5' : fp.khoStatus==='đang cho thuê' ? '#fed7aa' : '#fee2e2',
-                            color:      fp.khoStatus==='rảnh' ? '#059669' : fp.khoStatus==='đang cho thuê' ? '#c2410c' : '#dc2626'
-                          }">{{ fp.khoStatus }}</span>
                       </td>
                       <td style="vertical-align:middle; font-size:13px; color:var(--text-primary);">{{ fp.business || '—' }}</td>
                       <td style="vertical-align:middle;">
@@ -1699,6 +1624,7 @@
             </div>
           </div>
         </div>
+
 
         <!-- ══ MODULE: DASHBOARD (placeholder) ══ -->
         <div v-if="activeModule === 'dashboard'" class="fade-in">
@@ -1883,11 +1809,11 @@
       const ini  = name => name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
 
       const vias = [
-        { id:1, name:'Balwant Khushi Ram', fbId:'985686050653049', uid:'100076349899640', adsPowerId:'kq9f2a1', bms:[], twofa:false, tokenExp:'30/05/2026 16:03', tokenDays:58, status:'disabled', totalTKQC:1,   created:'31/03/2026' },
-        { id:2, name:'Rinrin Sundari',      fbId:'455541247467830', uid:'100006287882522', adsPowerId:'kq9f2b7', bms:[{ name:'Techcu 05397050', id:'185130878819889' },{ name:'BM1 limit 250 chưa tiêu thế live', id:'433779351118700' }], twofa:false, tokenExp:'25/05/2026 15:45', tokenDays:53, status:'ok', totalTKQC:851, created:'26/03/2026' },
-        { id:3, name:'Леха Незайкин',       fbId:'341731794510219', uid:'100004720746421', adsPowerId:'kq9f2c3', bms:[{ name:'Opis - 232426850964605', id:'232426850964605' },{ name:'Julia 2 FULL', id:'773086343098659' }], twofa:false, tokenExp:'25/05/2026 15:40', tokenDays:53, status:'ok', totalTKQC:513, created:'26/03/2026' },
-        { id:4, name:'Tao Bai Bai',         fbId:'270680949327953', uid:'100000591450596', adsPowerId:'kq9f2d5', bms:[{ name:'THẮNG CS01', id:'1353345999856117' }], twofa:false, tokenExp:'25/05/2026 15:34', tokenDays:53, status:'ok', totalTKQC:7, created:'26/03/2026' },
-        { id:5, name:'Umi Suprihatin',      fbId:'425000552719319', uid:'100000781200983', adsPowerId:'kq9f2e9', bms:[{ name:'24/2 Linh BM3', id:'153219434449737' },{ name:'寿光德元农业科技有限公司', id:'154482560954243' },{ name:'长治泰飞家宠宠物公司', id:'177923119619707' }], twofa:false, tokenExp:'25/05/2026 15:28', tokenDays:53, status:'ok', totalTKQC:42, created:'26/03/2026' },
+        { id:1, name:'Balwant Khushi Ram', fbId:'985686050653049', uid:'100076349899640', adsPowerId:'kq9f2a1', bms:[], twofa:false, tokenExp:'30/05/2026 16:03', tokenDays:58, status:'disabled', rentStatus:'held',    totalTKQC:1,   created:'31/03/2026' },
+        { id:2, name:'Rinrin Sundari',      fbId:'455541247467830', uid:'100006287882522', adsPowerId:'kq9f2b7', bms:[{ name:'Techcu 05397050', id:'185130878819889' },{ name:'BM1 limit 250 chưa tiêu thế live', id:'433779351118700' }], twofa:false, tokenExp:'25/05/2026 15:45', tokenDays:53, status:'ok', rentStatus:'renting', totalTKQC:851, created:'26/03/2026' },
+        { id:3, name:'Леха Незайкин',       fbId:'341731794510219', uid:'100004720746421', adsPowerId:'kq9f2c3', bms:[{ name:'Opis - 232426850964605', id:'232426850964605' },{ name:'Julia 2 FULL', id:'773086343098659' }], twofa:false, tokenExp:'25/05/2026 15:40', tokenDays:53, status:'ok', rentStatus:'renting', totalTKQC:513, created:'26/03/2026' },
+        { id:4, name:'Tao Bai Bai',         fbId:'270680949327953', uid:'100000591450596', adsPowerId:'kq9f2d5', bms:[{ name:'THẮNG CS01', id:'1353345999856117' }], twofa:false, tokenExp:'25/05/2026 15:34', tokenDays:53, status:'ok', rentStatus:'held',    totalTKQC:7, created:'26/03/2026' },
+        { id:5, name:'Umi Suprihatin',      fbId:'425000552719319', uid:'100000781200983', adsPowerId:'kq9f2e9', bms:[{ name:'24/2 Linh BM3', id:'153219434449737' },{ name:'寿光德元农业科技有限公司', id:'154482560954243' },{ name:'长治泰飞家宠宠物公司', id:'177923119619707' }], twofa:false, tokenExp:'25/05/2026 15:28', tokenDays:53, status:'ok', rentStatus:'renting', totalTKQC:42, created:'26/03/2026' },
       ].map(v => ({ ...v, color: rand(colors), initials: ini(v.name), checked: false }));
 
       const adAccounts = [
@@ -1971,7 +1897,9 @@
         },
         filterName:   '',
         filterUid:    '',
+        filterAdsPowerId: '',
         filterStatus: 'all',
+        filterRentStatus: 'all',
         filterQuyen:  'all',
         vias,
         // TKQC tab state
@@ -1986,6 +1914,12 @@
         tkqcFilterBM: 'all',
         tkqcFilterDate: '',
         tkqcFilterKho: 'all',
+        // Via modal (Thêm / Chỉnh sửa)
+        viaModalOpen: false,
+        viaModalMode: 'add',
+        viaForm: { id:null, name:'', fbId:'', uid:'', adsPowerId:'', twofa:false, status:'ok', rentStatus:'free' },
+        viaTokenResult: null,
+        viaDeleteTarget: null,
         // BM tab state
         bmFilterName: '',
         bmFilterId: '',
@@ -2080,8 +2014,10 @@
         return this.vias.filter(v => {
           const n = !this.filterName   || v.name.toLowerCase().includes(this.filterName.toLowerCase()) || v.fbId.includes(this.filterName);
           const u = !this.filterUid    || v.uid.includes(this.filterUid);
+          const a = !this.filterAdsPowerId || (v.adsPowerId || '').toLowerCase().includes(this.filterAdsPowerId.toLowerCase());
           const s = this.filterStatus === 'all' || v.status === this.filterStatus;
-          return n && u && s;
+          const r = this.filterRentStatus === 'all' || (v.rentStatus || 'free') === this.filterRentStatus;
+          return n && u && a && s && r;
         });
       },
       tkqcFilteredVias() {
@@ -2143,6 +2079,83 @@
         return this.adAccounts.filter(acc =>
           (acc.bmInfo || []).some(b => b.includes(bm.bmId))
         ).length;
+      },
+      openAddVia() {
+        this.viaModalMode = 'add';
+        this.viaForm = { id:null, name:'', fbId:'', uid:'', adsPowerId:'', twofa:false, status:'ok', rentStatus:'free' };
+        this.viaModalOpen = true;
+      },
+      editVia(via) {
+        this.viaModalMode = 'edit';
+        this.viaForm = {
+          id: via.id,
+          name: via.name,
+          fbId: via.fbId,
+          uid: via.uid,
+          adsPowerId: via.adsPowerId || '',
+          twofa: !!via.twofa,
+          status: via.status || 'ok',
+          rentStatus: via.rentStatus || 'free',
+        };
+        this.viaModalOpen = true;
+      },
+      closeViaModal() { this.viaModalOpen = false; },
+      saveVia() {
+        const f = this.viaForm;
+        if (!f.name.trim()) { alert('Vui lòng nhập tên Via'); return; }
+        if (this.viaModalMode === 'edit') {
+          const target = this.vias.find(v => v.id === f.id);
+          if (target) {
+            target.name = f.name.trim();
+            target.fbId = f.fbId.trim();
+            target.uid = f.uid.trim();
+            target.adsPowerId = f.adsPowerId.trim();
+            target.twofa = f.twofa;
+            target.status = f.status;
+            target.rentStatus = f.rentStatus;
+            const parts = target.name.trim().split(/\s+/);
+            target.initials = ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+          }
+        } else {
+          const parts = f.name.trim().split(/\s+/);
+          const newId = (this.vias.reduce((m, v) => Math.max(m, v.id || 0), 0)) + 1;
+          this.vias.unshift({
+            id: newId,
+            name: f.name.trim(),
+            fbId: f.fbId.trim(),
+            uid: f.uid.trim(),
+            adsPowerId: f.adsPowerId.trim(),
+            bms: [],
+            twofa: f.twofa,
+            tokenExp: '',
+            tokenDays: 0,
+            status: f.status,
+            rentStatus: f.rentStatus,
+            totalTKQC: 0,
+            created: new Date().toLocaleDateString('vi-VN'),
+            color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6,'0'),
+            initials: ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase(),
+            checked: false,
+          });
+        }
+        this.viaModalOpen = false;
+      },
+      deleteVia(via) { this.viaDeleteTarget = via; },
+      confirmDeleteVia() {
+        if (!this.viaDeleteTarget) return;
+        this.vias = this.vias.filter(v => v.id !== this.viaDeleteTarget.id);
+        this.viaDeleteTarget = null;
+      },
+      checkToken(via) {
+        const days = via.tokenDays ?? 0;
+        const ok = via.status === 'ok' && days > 0;
+        this.viaTokenResult = {
+          via,
+          ok,
+          message: ok
+            ? `Token còn hiệu lực (${days} ngày, hết hạn ${via.tokenExp || '—'})`
+            : `Token không hợp lệ hoặc đã hết hạn${via.tokenExp ? ' (hết hạn ' + via.tokenExp + ')' : ''}`,
+        };
       },
     },
   }).mount('#app');
