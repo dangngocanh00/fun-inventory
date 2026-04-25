@@ -1019,6 +1019,10 @@
                   <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">uid</div>
                   <input class="fi" aria-label="uid Facebook" placeholder="Nhập uid facebook..." v-model="filterUid" />
                 </div>
+                <div style="min-width:150px; max-width:190px; flex:1;">
+                  <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">ID Adspower</div>
+                  <input class="fi" aria-label="ID Adspower" placeholder="Nhập ID Adspower..." v-model="filterAdsPowerId" />
+                </div>
                 <div style="min-width:150px; max-width:180px;">
                   <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Trạng thái</div>
                   <select class="fs" aria-label="Lọc trạng thái" v-model="filterStatus">
@@ -1035,7 +1039,7 @@
                     <option value="spend">Check spend</option>
                   </select>
                 </div>
-                <button @click="filterName=''; filterUid=''; filterStatus='all'; filterQuyen='all'"
+                <button @click="filterName=''; filterUid=''; filterAdsPowerId=''; filterStatus='all'; filterQuyen='all'"
                         style="font-size:12.5px; color:#64748b; background:none; border:none; cursor:pointer; text-decoration:underline; white-space:nowrap; padding-bottom:2px;">
                   Đặt lại bộ lọc
                 </button>
@@ -1055,6 +1059,7 @@
                       <th style="width:38px; text-align:center;">Chọn</th>
                       <th style="width:40px; text-align:center;">STT</th>
                       <th style="min-width:195px;">Thông tin Via</th>
+                      <th style="min-width:130px;">ID Adspower</th>
                       <th style="min-width:215px;">Thông tin BM</th>
                       <th style="width:46px; text-align:center;">2FA</th>
                       <th style="width:58px; text-align:center;">Token</th>
@@ -1081,6 +1086,10 @@
                             <div class="mono" style="color:#94a3b8;">U ID:{{ via.uid }}</div>
                           </div>
                         </div>
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <span v-if="via.adsPowerId" class="mono" style="font-size:12px; color:#3b82f6; font-weight:500;">{{ via.adsPowerId }}</span>
+                        <span v-else style="color:#cbd5e1; font-size:12px;">—</span>
                       </td>
                       <td style="vertical-align:top; padding-top:12px;">
                         <div v-if="via.bms && via.bms.length">
@@ -1264,13 +1273,29 @@
                       <option v-for="bm in allBMs" :key="bm.id" :value="bm.id">{{ bm.name }}</option>
                     </select>
                   </div>
+                  <div style="min-width:130px; max-width:160px;">
+                    <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Loại TKQC</div>
+                    <select class="fs" aria-label="Lọc loại TKQC" v-model="tkqcFilterType">
+                      <option value="all">Tất cả</option>
+                      <option value="dn">Doanh nghiệp</option>
+                      <option value="cn">Cá nhân</option>
+                    </select>
+                  </div>
+                  <div style="min-width:140px; max-width:170px;">
+                    <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Trạng thái thuê</div>
+                    <select class="fs" aria-label="Lọc trạng thái thuê" v-model="tkqcFilterRent">
+                      <option value="all">Tất cả</option>
+                      <option value="free">Rảnh</option>
+                      <option value="renting">Đang cho thuê</option>
+                    </select>
+                  </div>
                 </div>
                 <div style="display:flex; align-items:flex-end; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
                   <div style="min-width:180px; max-width:220px;">
                     <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Khoảng thời gian</div>
                     <input class="fi" type="text" placeholder="Chọn khoảng thời gian" v-model="tkqcFilterDate" onfocus="(this.type='date')" onblur="(this.value?'':this.type='text')" />
                   </div>
-                  <button @click="tkqcFilterName=''; tkqcFilterId=''; tkqcFilterStatus='all'; tkqcFilterConnection='all'; tkqcFilterToken='all'; tkqcFilterBM='all'; tkqcFilterDate='';"
+                  <button @click="tkqcFilterName=''; tkqcFilterId=''; tkqcFilterStatus='all'; tkqcFilterConnection='all'; tkqcFilterToken='all'; tkqcFilterBM='all'; tkqcFilterType='all'; tkqcFilterRent='all'; tkqcFilterDate='';"
                           style="font-size:12.5px; color:#64748b; background:none; border:none; cursor:pointer; text-decoration:underline; white-space:nowrap; padding-bottom:2px;">
                     Đặt lại bộ lọc
                   </button>
@@ -1286,11 +1311,13 @@
                         </th>
                         <th style="min-width:180px;">Tên tài khoản</th>
                         <th style="min-width:145px;">ID tài khoản</th>
+                        <th style="min-width:120px;">Loại TKQC</th>
                         <th style="min-width:250px;">Thông tin via/bm</th>
                         <th style="min-width:95px;">Trạng thái</th>
                         <th style="min-width:75px;">Số dư</th>
                         <th style="min-width:120px;">Trạng thái kết nối</th>
                         <th style="width:70px;">Tiền tệ</th>
+                        <th style="min-width:140px;">Trạng thái thuê</th>
                         <th style="min-width:130px;">Ngày tạo</th>
                         <th style="width:100px; text-align:center;">Thao tác</th>
                       </tr>
@@ -1306,6 +1333,11 @@
                         </td>
                         <td style="vertical-align:middle;">
                           <span class="mono" style="font-size:12px; color:#3b82f6; font-weight:500;">{{ acc.accountId }}</span>
+                        </td>
+                        <td style="vertical-align:middle;">
+                          <span :class="['badge', (acc.ownerType || 'dn') === 'dn' ? 'bg-blue' : 'bg-teal']">
+                            {{ (acc.ownerType || 'dn') === 'dn' ? 'Doanh nghiệp' : 'Cá nhân' }}
+                          </span>
                         </td>
                         <td style="vertical-align:top; padding-top:10px;">
                           <!-- Via info -->
@@ -1338,6 +1370,16 @@
                           </span>
                         </td>
                         <td style="vertical-align:middle; font-weight:500;">{{ acc.currency }}</td>
+                        <td style="vertical-align:middle;">
+                          <button
+                            @click="toggleTkqcRent(acc)"
+                            :class="['badge', (acc.rentStatus || 'free') === 'renting' ? 'bg-amber' : 'bg-blue']"
+                            :title="(acc.rentStatus || 'free') === 'renting' ? 'Nhấn để chuyển sang Rảnh' : 'Nhấn để chuyển sang Đang cho thuê'"
+                            style="border:none; cursor:pointer;">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                            {{ (acc.rentStatus || 'free') === 'renting' ? 'Đang cho thuê' : 'Rảnh' }}
+                          </button>
+                        </td>
                         <td style="vertical-align:middle; color:#64748b; font-size:12.5px;">{{ acc.created }}</td>
                         <td style="vertical-align:middle; text-align:center;">
                           <div style="display:flex; gap:3px; justify-content:center;">
@@ -1412,7 +1454,15 @@
                     <option v-for="via in vias" :key="via.id" :value="via.id">{{ via.name }}</option>
                   </select>
                 </div>
-                <button @click="bmFilterName=''; bmFilterId=''; bmFilterStatus='all'; bmFilterVia='all';"
+                <div style="min-width:140px; max-width:170px;">
+                  <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Trạng thái thuê</div>
+                  <select class="fs" aria-label="Lọc trạng thái thuê BM" v-model="bmFilterRent">
+                    <option value="all">Tất cả</option>
+                    <option value="free">Rảnh</option>
+                    <option value="renting">Đang cho thuê</option>
+                  </select>
+                </div>
+                <button @click="bmFilterName=''; bmFilterId=''; bmFilterStatus='all'; bmFilterVia='all'; bmFilterRent='all';"
                         style="font-size:12.5px; color:#64748b; background:none; border:none; cursor:pointer; text-decoration:underline; white-space:nowrap; padding-bottom:2px;">
                   Đặt lại bộ lọc
                 </button>
@@ -1431,6 +1481,7 @@
                       <th style="min-width:100px;">Trạng thái</th>
                       <th style="min-width:130px;">Trạng thái kết nối</th>
                       <th style="min-width:260px;">Thông tin via/tkqc</th>
+                      <th style="min-width:140px;">Trạng thái thuê</th>
                       <th style="min-width:140px;">Ngày tạo</th>
                       <th style="width:100px; text-align:center;">Thao tác</th>
                     </tr>
@@ -1464,6 +1515,16 @@
                             {{ vi + 1 }}. {{ v }}
                           </div>
                         </div>
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <button
+                          @click="toggleBmRent(bm)"
+                          :class="['badge', (bm.rentStatus || 'free') === 'renting' ? 'bg-amber' : 'bg-blue']"
+                          :title="(bm.rentStatus || 'free') === 'renting' ? 'Nhấn để chuyển sang Rảnh' : 'Nhấn để chuyển sang Đang cho thuê'"
+                          style="border:none; cursor:pointer;">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                          {{ (bm.rentStatus || 'free') === 'renting' ? 'Đang cho thuê' : 'Rảnh' }}
+                        </button>
                       </td>
                       <td style="vertical-align:middle; color:#64748b; font-size:12.5px;">{{ bm.created }}</td>
                       <td style="vertical-align:middle; text-align:center;">
@@ -1645,7 +1706,7 @@
         </div>
 
         <!-- ══ MODULE: LỆNH BOT (shared placeholder) ══ -->
-        <div v-if="activeLenhBot" class="fade-in">
+        <div v-if="activeLenhBot && activeModule !== 'sharetkqc'" class="fade-in">
           <div style="background:white; border-radius:12px; border:1px solid var(--border); padding:32px; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
               <div style="font-size:18px; font-weight:700; color:var(--text-primary);">{{ activeLenhBot.label }}</div>
@@ -1660,6 +1721,474 @@
                 <line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>
               </svg>
               <div style="margin-top:12px; font-size:13px; color:#94a3b8;">Module này đang được cấu hình. Chi tiết sẽ cập nhật sau.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ MODULE: SHARE TKQC ══ -->
+        <div v-if="activeModule === 'sharetkqc'" class="fade-in">
+
+          <!-- Section 1: Source Policy -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Cấu hình nguồn TKQC</div>
+              <span class="mono" style="padding:3px 10px; border-radius:6px; font-size:12px; font-weight:500; background:#eff6ff; color:var(--accent);">/sharetkqc</span>
+            </div>
+
+            <div style="padding:16px 18px;">
+              <!-- Mode radio cards -->
+              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px;">
+                <!-- MODE 1: Nguồn đơn -->
+                <div @click="shareTkqcPolicy.mode = 'single'"
+                     :style="{ cursor:'pointer', padding:'14px', borderRadius:'10px', border:'2px solid ' + (shareTkqcPolicy.mode==='single' ? 'var(--accent)' : 'var(--border)'), background: shareTkqcPolicy.mode==='single' ? '#eff6ff' : '#fff', transition:'all .15s' }">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                    <div :style="{ width:'16px', height:'16px', borderRadius:'50%', border:'2px solid ' + (shareTkqcPolicy.mode==='single' ? 'var(--accent)' : '#cbd5e1'), display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }">
+                      <div v-if="shareTkqcPolicy.mode==='single'" style="width:8px; height:8px; border-radius:50%; background:var(--accent);"></div>
+                    </div>
+                    <div style="font-weight:600; font-size:13.5px; color:var(--text-primary);">Nguồn đơn</div>
+                  </div>
+                  <div style="font-size:11.5px; color:#64748b; line-height:1.5; margin-bottom:10px;">Bot chỉ lấy TKQC từ đúng loại đã chọn</div>
+                  <div v-if="shareTkqcPolicy.mode==='single'" @click.stop>
+                    <select class="fs" aria-label="Loại nguồn Single" v-model="shareTkqcPolicy.singleType" style="width:100%;">
+                      <option value="dn">Doanh nghiệp</option>
+                      <option value="cn">Cá nhân</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- MODE 2: Tỉ lệ -->
+                <div @click="shareTkqcPolicy.mode = 'ratio'"
+                     :style="{ cursor:'pointer', padding:'14px', borderRadius:'10px', border:'2px solid ' + (shareTkqcPolicy.mode==='ratio' ? 'var(--accent)' : 'var(--border)'), background: shareTkqcPolicy.mode==='ratio' ? '#eff6ff' : '#fff', transition:'all .15s' }">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                    <div :style="{ width:'16px', height:'16px', borderRadius:'50%', border:'2px solid ' + (shareTkqcPolicy.mode==='ratio' ? 'var(--accent)' : '#cbd5e1'), display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }">
+                      <div v-if="shareTkqcPolicy.mode==='ratio'" style="width:8px; height:8px; border-radius:50%; background:var(--accent);"></div>
+                    </div>
+                    <div style="font-weight:600; font-size:13.5px; color:var(--text-primary);">Tỉ lệ</div>
+                  </div>
+                  <div style="font-size:11.5px; color:#64748b; line-height:1.5; margin-bottom:10px;">Bot lấy theo tỉ lệ đã cài, tự tính số lượng mỗi loại</div>
+                  <div v-if="shareTkqcPolicy.mode==='ratio'" @click.stop>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+                      <div>
+                        <div style="font-size:10.5px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Doanh nghiệp %</div>
+                        <input class="fi" type="number" min="0" max="100" aria-label="Tỉ lệ Doanh nghiệp"
+                               :value="shareTkqcPolicy.ratioDN" @input="onRatioDN($event.target.value)" />
+                      </div>
+                      <div>
+                        <div style="font-size:10.5px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Cá nhân %</div>
+                        <input class="fi" type="number" min="0" max="100" aria-label="Tỉ lệ Cá nhân"
+                               :value="shareTkqcPolicy.ratioCN" @input="onRatioCN($event.target.value)" />
+                      </div>
+                    </div>
+                    <div style="height:8px; border-radius:4px; overflow:hidden; display:flex; background:#f1f5f9; margin-bottom:6px;">
+                      <div :style="{ width: shareTkqcPolicy.ratioDN + '%', background:'#2563eb', transition:'width .15s' }"></div>
+                      <div :style="{ width: shareTkqcPolicy.ratioCN + '%', background:'#10b981', transition:'width .15s' }"></div>
+                    </div>
+                    <div style="font-size:10.5px; color:#94a3b8; font-style:italic;">Số lẻ được làm tròn về phía Doanh nghiệp</div>
+                  </div>
+                </div>
+
+                <!-- MODE 3: Ưu tiên và bù -->
+                <div @click="shareTkqcPolicy.mode = 'fallback'"
+                     :style="{ cursor:'pointer', padding:'14px', borderRadius:'10px', border:'2px solid ' + (shareTkqcPolicy.mode==='fallback' ? 'var(--accent)' : 'var(--border)'), background: shareTkqcPolicy.mode==='fallback' ? '#eff6ff' : '#fff', transition:'all .15s' }">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                    <div :style="{ width:'16px', height:'16px', borderRadius:'50%', border:'2px solid ' + (shareTkqcPolicy.mode==='fallback' ? 'var(--accent)' : '#cbd5e1'), display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }">
+                      <div v-if="shareTkqcPolicy.mode==='fallback'" style="width:8px; height:8px; border-radius:50%; background:var(--accent);"></div>
+                    </div>
+                    <div style="font-weight:600; font-size:13.5px; color:var(--text-primary);">Ưu tiên và bù</div>
+                  </div>
+                  <div style="font-size:11.5px; color:#64748b; line-height:1.5; margin-bottom:10px;">Ưu tiên 1 loại, nếu kho không đủ tự động lấy bù từ loại còn lại</div>
+                  <div v-if="shareTkqcPolicy.mode==='fallback'" @click.stop style="display:flex; flex-direction:column; gap:6px;">
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12.5px; color:var(--text-primary);">
+                      <input type="radio" name="shareFallbackPri" value="dn" v-model="shareTkqcPolicy.fallbackPriority" style="accent-color:var(--accent);" />
+                      Doanh nghiệp trước
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12.5px; color:var(--text-primary);">
+                      <input type="radio" name="shareFallbackPri" value="cn" v-model="shareTkqcPolicy.fallbackPriority" style="accent-color:var(--accent);" />
+                      Cá nhân trước
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Stats row -->
+              <div style="margin-top:14px; padding:12px 14px; background:#f8fafc; border:1px solid var(--border); border-radius:10px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <div style="font-size:12px; color:#64748b; font-weight:600;">Kho hiện có:</div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="width:8px; height:8px; border-radius:50%; background:#2563eb;"></span>
+                  <span style="font-size:12.5px; color:var(--text-primary);">Doanh nghiệp: <strong>12</strong> TKQC rảnh</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <span style="width:8px; height:8px; border-radius:50%; background:#10b981;"></span>
+                  <span style="font-size:12.5px; color:var(--text-primary);">Cá nhân: <strong>8</strong> TKQC rảnh</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Limit theo CS -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Limit theo CS</div>
+              <div style="font-size:12px; color:#64748b; margin-top:2px;">Số TKQC tối đa mỗi CS có thể share trong 1 ngày</div>
+            </div>
+            <div style="padding:16px 18px;">
+              <!-- Toggle + default -->
+              <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <span @click="csLimitConfig.enabled = !csLimitConfig.enabled"
+                        :style="{ width:'36px', height:'20px', borderRadius:'10px', background: csLimitConfig.enabled ? 'var(--accent)' : '#cbd5e1', position:'relative', transition:'background .15s', flexShrink:0 }">
+                    <span :style="{ position:'absolute', top:'2px', left: csLimitConfig.enabled ? '18px' : '2px', width:'16px', height:'16px', borderRadius:'50%', background:'#fff', transition:'left .15s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)' }"></span>
+                  </span>
+                  <span style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ csLimitConfig.enabled ? 'Đang bật' : 'Đã tắt (không giới hạn)' }}</span>
+                </label>
+                <div v-if="csLimitConfig.enabled" style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12.5px; color:#64748b;">Limit mặc định:</span>
+                  <input class="fi" type="number" min="0" aria-label="Limit mặc định CS" v-model.number="csLimitConfig.defaultLimit" style="width:90px;" />
+                </div>
+                <div style="font-size:11.5px; color:#94a3b8; font-style:italic;">Reset lúc {{ csLimitConfig.resetTime }} mỗi ngày</div>
+              </div>
+
+              <!-- Override table -->
+              <div v-if="csLimitConfig.enabled" style="margin-top:14px; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                <table class="dt">
+                  <thead>
+                    <tr>
+                      <th style="min-width:180px;">CS</th>
+                      <th style="min-width:140px;">Username Telegram</th>
+                      <th style="width:130px;">Limit riêng</th>
+                      <th style="min-width:170px;">Đã dùng hôm nay</th>
+                      <th style="width:90px; text-align:center;">Còn lại</th>
+                      <th style="width:120px; text-align:center;">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="cs in csLimitConfig.overrides" :key="cs.id">
+                      <td style="vertical-align:middle;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div :style="{ width:'30px', height:'30px', borderRadius:'50%', background: csAvatarColor(cs.id), color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'11px', fontWeight:'700' }">
+                            {{ csInitials(cs.name) }}
+                          </div>
+                          <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ cs.name }}</div>
+                        </div>
+                      </td>
+                      <td style="vertical-align:middle; font-size:12.5px; color:#374151;" class="mono">{{ cs.username }}</td>
+                      <td style="vertical-align:middle;">
+                        <input class="fi" type="number" min="0" aria-label="Limit riêng" placeholder="Dùng mặc định" v-model.number="cs.limit" style="width:110px;" />
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div style="flex:1; height:6px; border-radius:3px; background:#f1f5f9; overflow:hidden;">
+                            <div :style="{ width: csUsedPct(cs) + '%', height:'100%', background:'var(--accent)', transition:'width .2s' }"></div>
+                          </div>
+                          <span style="font-size:12px; color:#64748b; min-width:48px;">{{ cs.usedToday }}/{{ csEffectiveLimit(cs) }}</span>
+                        </div>
+                      </td>
+                      <td style="vertical-align:middle; text-align:center; font-weight:700;"
+                          :style="{ color: csRemaining(cs) === 0 ? '#ef4444' : csRemaining(cs) <= csEffectiveLimit(cs) * 0.2 ? '#f97316' : 'var(--text-primary)' }">
+                        {{ csRemaining(cs) }}
+                      </td>
+                      <td style="vertical-align:middle; text-align:center;">
+                        <button class="btn btn-ghost" style="padding:4px 10px; font-size:12px;" @click="resetCsUsed(cs)">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                          Reset
+                        </button>
+                      </td>
+                    </tr>
+                    <tr v-if="!csLimitConfig.overrides.length">
+                      <td colspan="6" style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Chưa có override CS nào</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="padding:10px 14px; border-top:1px solid var(--border); background:#fafafa;">
+                  <button class="btn btn-ghost" style="font-size:12.5px;" @click="addCsOverride">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Thêm CS
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Limit theo Khách hàng -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Limit theo Khách hàng</div>
+              <div style="font-size:12px; color:#64748b; margin-top:2px;">Số TKQC mới tối đa mỗi khách có thể nhận trong 1 ngày</div>
+            </div>
+            <div style="padding:16px 18px;">
+              <!-- Toggle + default -->
+              <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <span @click="khLimitConfig.enabled = !khLimitConfig.enabled"
+                        :style="{ width:'36px', height:'20px', borderRadius:'10px', background: khLimitConfig.enabled ? 'var(--accent)' : '#cbd5e1', position:'relative', transition:'background .15s', flexShrink:0 }">
+                    <span :style="{ position:'absolute', top:'2px', left: khLimitConfig.enabled ? '18px' : '2px', width:'16px', height:'16px', borderRadius:'50%', background:'#fff', transition:'left .15s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)' }"></span>
+                  </span>
+                  <span style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ khLimitConfig.enabled ? 'Đang bật' : 'Đã tắt (không giới hạn)' }}</span>
+                </label>
+                <div v-if="khLimitConfig.enabled" style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12.5px; color:#64748b;">Limit mặc định:</span>
+                  <input class="fi" type="number" min="0" aria-label="Limit mặc định KH" v-model.number="khLimitConfig.defaultLimit" style="width:90px;" />
+                </div>
+                <div style="font-size:11.5px; color:#94a3b8; font-style:italic;">Reset lúc {{ khLimitConfig.resetTime }} mỗi ngày</div>
+              </div>
+
+              <!-- Override table -->
+              <div v-if="khLimitConfig.enabled" style="margin-top:14px; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                <table class="dt">
+                  <thead>
+                    <tr>
+                      <th style="min-width:180px;">Group</th>
+                      <th style="min-width:160px;">Group ID Telegram</th>
+                      <th style="width:100px;">Tier</th>
+                      <th style="width:130px;">Limit riêng</th>
+                      <th style="min-width:170px;">Đã nhận hôm nay</th>
+                      <th style="width:90px; text-align:center;">Còn lại</th>
+                      <th style="width:120px; text-align:center;">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="g in khLimitConfig.overrides" :key="g.id">
+                      <td style="vertical-align:middle; font-size:13px; font-weight:600; color:var(--text-primary);">{{ g.name }}</td>
+                      <td style="vertical-align:middle; font-size:12.5px; color:#374151;" class="mono">{{ g.groupId }}</td>
+                      <td style="vertical-align:middle;">
+                        <span :class="['badge', g.tier === 'VIP' ? 'bg-amber' : 'bg-blue']">{{ g.tier }}</span>
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <input class="fi" type="number" min="0" aria-label="Limit riêng KH" placeholder="Dùng mặc định" v-model.number="g.limit" style="width:110px;" />
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div style="flex:1; height:6px; border-radius:3px; background:#f1f5f9; overflow:hidden;">
+                            <div :style="{ width: khUsedPct(g) + '%', height:'100%', background:'var(--accent)', transition:'width .2s' }"></div>
+                          </div>
+                          <span style="font-size:12px; color:#64748b; min-width:48px;">{{ g.usedToday }}/{{ khEffectiveLimit(g) }}</span>
+                        </div>
+                      </td>
+                      <td style="vertical-align:middle; text-align:center; font-weight:700;"
+                          :style="{ color: khRemaining(g) === 0 ? '#ef4444' : khRemaining(g) <= khEffectiveLimit(g) * 0.2 ? '#f97316' : 'var(--text-primary)' }">
+                        {{ khRemaining(g) }}
+                      </td>
+                      <td style="vertical-align:middle; text-align:center;">
+                        <button class="btn btn-ghost" style="padding:4px 10px; font-size:12px;" @click="resetKhUsed(g)">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                          Reset
+                        </button>
+                      </td>
+                    </tr>
+                    <tr v-if="!khLimitConfig.overrides.length">
+                      <td colspan="7" style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Chưa có override Group nào</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="padding:10px 14px; border-top:1px solid var(--border); background:#fafafa;">
+                  <button class="btn btn-ghost" style="font-size:12.5px;" @click="addKhOverride">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Thêm Group
+                  </button>
+                </div>
+              </div>
+
+              <!-- Limit Simulator -->
+              <div style="margin-top:16px; border:1px solid var(--border); border-radius:10px; overflow:hidden;">
+                <div @click="simulator.open = !simulator.open"
+                     style="padding:10px 14px; background:#f8fafc; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
+                  <div style="font-size:13px; font-weight:600; color:var(--text-primary);">🧪 Thử tính limit</div>
+                  <svg :style="{ transform: simulator.open ? 'rotate(180deg)' : '', transition:'transform .15s' }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div v-if="simulator.open" style="padding:14px;">
+                  <div style="display:grid; grid-template-columns:repeat(3, 1fr) auto; gap:10px; align-items:end;">
+                    <div>
+                      <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Username CS</div>
+                      <input class="fi" placeholder="@cs_minh" v-model="simulator.cs" />
+                    </div>
+                    <div>
+                      <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Tên Group</div>
+                      <input class="fi" placeholder="Group KH Alpha" v-model="simulator.group" />
+                    </div>
+                    <div>
+                      <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Số TKQC yêu cầu</div>
+                      <input class="fi" type="number" min="1" v-model.number="simulator.requested" />
+                    </div>
+                    <button class="btn btn-green" @click="runSimulator">Tính</button>
+                  </div>
+                  <div v-if="simulator.result" style="margin-top:14px; padding:12px 14px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; font-size:13px; line-height:1.7; color:var(--text-primary);">
+                    <div>CS <strong>{{ simulator.result.csName }}</strong> còn: <strong>{{ simulator.result.csRemaining }}</strong> slot hôm nay</div>
+                    <div>Group <strong>{{ simulator.result.groupName }}</strong> còn: <strong>{{ simulator.result.khRemaining }}</strong> slot hôm nay</div>
+                    <div style="margin-top:6px; padding-top:6px; border-top:1px dashed var(--border);">
+                      → Có thể share: min({{ simulator.result.requested }}, {{ simulator.result.csRemaining }}, {{ simulator.result.khRemaining }}) = <strong style="color:var(--accent);">{{ simulator.result.canShare }}</strong> TKQC
+                    </div>
+                    <div v-if="simulator.result.canShare < simulator.result.requested" style="margin-top:6px; color:#f97316; font-weight:600;">
+                      ⚠️ Thấp hơn yêu cầu — bot sẽ hỏi confirm trước khi thực hiện
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save bar (chung cho 3 section config) -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <div style="font-size:12.5px; color:#64748b;">Lưu cấu hình áp dụng cho cả 3 mục: nguồn TKQC, limit CS và limit Khách hàng.</div>
+            <button class="btn btn-green" @click="saveAllShareConfig">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Lưu cấu hình
+            </button>
+          </div>
+
+          <!-- Section 4: Audit Log -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Lịch sử gọi lệnh</div>
+              <span style="padding:2px 10px; border-radius:20px; font-size:11.5px; font-weight:600; background:#eff6ff; color:var(--accent);">{{ filteredAuditLogs.length }} / {{ auditLogs.length }}</span>
+            </div>
+
+            <!-- Filter bar -->
+            <div style="padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap;">
+              <div style="min-width:200px; max-width:260px; flex:1;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Tìm kiếm</div>
+                <input class="fi" placeholder="Tìm username, tên group" v-model="auditSearch" />
+              </div>
+              <div style="min-width:130px;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Trạng thái</div>
+                <select class="fs" aria-label="Lọc trạng thái" v-model="auditFilterStatus">
+                  <option value="all">Tất cả</option>
+                  <option value="success">Success</option>
+                  <option value="failed">Failed</option>
+                  <option value="partial">Partial</option>
+                </select>
+              </div>
+              <div style="min-width:140px;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Từ ngày</div>
+                <input class="fi" type="date" aria-label="Từ ngày" v-model="auditFilterFrom" />
+              </div>
+              <div style="min-width:140px;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Đến ngày</div>
+                <input class="fi" type="date" aria-label="Đến ngày" v-model="auditFilterTo" />
+              </div>
+              <button class="btn btn-ghost" @click="exportAuditCsv">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Xuất CSV
+              </button>
+            </div>
+
+            <!-- Table -->
+            <div style="overflow-x:auto;">
+              <table class="dt">
+                <thead>
+                  <tr>
+                    <th style="width:40px; text-align:center;">STT</th>
+                    <th style="min-width:150px;">Thời gian</th>
+                    <th style="min-width:130px;">Username</th>
+                    <th style="min-width:150px;">Group</th>
+                    <th style="min-width:280px;">Tham số tóm tắt</th>
+                    <th style="min-width:130px;">CS limit lúc gọi</th>
+                    <th style="min-width:130px;">KH limit lúc gọi</th>
+                    <th style="min-width:100px;">Trạng thái</th>
+                    <th style="min-width:150px;">Kết quả</th>
+                    <th style="width:70px; text-align:center;">Chi tiết</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(log, idx) in filteredAuditLogs" :key="log.id">
+                    <td style="text-align:center; vertical-align:middle; color:#94a3b8;">{{ idx + 1 }}</td>
+                    <td style="vertical-align:middle; color:#374151; font-size:12.5px;" class="mono">{{ log.time }}</td>
+                    <td style="vertical-align:middle; font-weight:600; color:var(--text-primary); font-size:12.5px;">{{ log.username }}</td>
+                    <td style="vertical-align:middle; font-size:12.5px; color:#374151;">{{ log.group }}</td>
+                    <td style="vertical-align:middle; color:#64748b; font-size:12px;">{{ log.paramSummary }}</td>
+                    <td style="vertical-align:middle; font-size:12.5px;" class="mono">{{ log.csLimitSnapshot || '—' }} <span style="color:#94a3b8; font-weight:400;">đã dùng</span></td>
+                    <td style="vertical-align:middle; font-size:12.5px;" class="mono">{{ log.khLimitSnapshot || '—' }} <span style="color:#94a3b8; font-weight:400;">đã nhận</span></td>
+                    <td style="vertical-align:middle;">
+                      <span :class="['badge', auditStatusClass(log.status)]">{{ auditStatusLabel(log.status) }}</span>
+                    </td>
+                    <td style="vertical-align:middle; font-size:12.5px; color:#374151;">{{ log.resultSummary }}</td>
+                    <td style="vertical-align:middle; text-align:center;">
+                      <button class="ab" aria-label="Xem chi tiết" title="Xem chi tiết" style="background:#dbeafe;" @click="openAuditDetail(log)">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="!filteredAuditLogs.length">
+                    <td colspan="10" style="text-align:center; padding:32px; color:#94a3b8; font-size:13px;">Không có log nào khớp bộ lọc</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Modal: Chi tiết audit log -->
+          <div v-if="auditDetail"
+               style="position:fixed; inset:0; background:rgba(15,23,42,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;"
+               @click.self="auditDetail = null">
+            <div style="background:#fff; width:720px; max-width:96vw; max-height:90vh; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,0.25); display:flex; flex-direction:column; overflow:hidden;">
+              <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <span class="mono" style="padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600; background:#eff6ff; color:var(--accent);">{{ auditDetail.command }}</span>
+                  <span class="mono" style="font-size:12.5px; color:#64748b;">{{ auditDetail.time }}</span>
+                </div>
+                <button @click="auditDetail = null" aria-label="Đóng" style="background:none; border:none; cursor:pointer; color:#64748b; padding:4px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div style="padding:16px 18px; overflow-y:auto;">
+                <!-- Info row -->
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:14px;">
+                  <div style="padding:10px 12px; background:#f8fafc; border-radius:8px;">
+                    <div style="font-size:10.5px; color:#94a3b8; font-weight:600; margin-bottom:3px;">USERNAME</div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ auditDetail.username }}</div>
+                  </div>
+                  <div style="padding:10px 12px; background:#f8fafc; border-radius:8px;">
+                    <div style="font-size:10.5px; color:#94a3b8; font-weight:600; margin-bottom:3px;">GROUP</div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ auditDetail.group }}</div>
+                  </div>
+                  <div style="padding:10px 12px; background:#f8fafc; border-radius:8px;">
+                    <div style="font-size:10.5px; color:#94a3b8; font-weight:600; margin-bottom:3px;">MODE LÚC ĐÓ</div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ auditDetail.policySnapshot }}</div>
+                  </div>
+                </div>
+
+                <!-- Full input -->
+                <div style="margin-bottom:14px;">
+                  <div style="font-size:11.5px; color:#94a3b8; font-weight:600; margin-bottom:4px;">INPUT ĐẦY ĐỦ</div>
+                  <div class="mono" style="padding:10px 12px; background:#0f172a; color:#e2e8f0; border-radius:8px; font-size:12px; line-height:1.6; white-space:pre-wrap; word-break:break-all;">{{ auditDetail.command }} {{ auditDetail.paramSummary }}</div>
+                </div>
+
+                <!-- Per-item result -->
+                <div>
+                  <div style="font-size:11.5px; color:#94a3b8; font-weight:600; margin-bottom:4px;">KẾT QUẢ TỪNG ITEM</div>
+                  <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                    <table class="dt">
+                      <thead>
+                        <tr>
+                          <th style="min-width:110px;">TKQC ID</th>
+                          <th style="min-width:180px;">Tên</th>
+                          <th style="width:90px;">Loại</th>
+                          <th style="width:110px;">Trạng thái</th>
+                          <th style="min-width:200px;">Lý do lỗi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(it, i) in auditDetail.items" :key="i">
+                          <td class="mono" style="vertical-align:middle; color:#3b82f6; font-size:11.5px; font-weight:500;">{{ it.tkqcId }}</td>
+                          <td style="vertical-align:middle; font-size:12.5px;">{{ it.name }}</td>
+                          <td style="vertical-align:middle;">
+                            <span :class="['badge', it.type === 'dn' ? 'bg-blue' : 'bg-teal']">{{ it.type === 'dn' ? 'DN' : 'CN' }}</span>
+                          </td>
+                          <td style="vertical-align:middle;">
+                            <span :class="['badge', auditStatusClass(it.status)]">{{ auditStatusLabel(it.status) }}</span>
+                          </td>
+                          <td style="vertical-align:middle; color:#ef4444; font-size:12px;">{{ it.error || '—' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:#f8fafc;">
+                <div style="font-size:12.5px; color:#64748b;">
+                  Tổng <strong style="color:var(--text-primary);">{{ auditDetail.items.filter(it => it.status === 'success').length }}/{{ auditDetail.items.length }}</strong> thành công
+                </div>
+                <button class="btn btn-green" @click="auditDetail = null">Đóng</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1818,14 +2347,14 @@
 
       const adAccounts = [
         {
-          id:1, name:'Rafael Gonzalez Soto', type:'—', accountId:'1197393238878807',
+          id:1, name:'Rafael Gonzalez Soto', type:'—', ownerType:'dn', accountId:'1197393238878807',
           viaInfo:['Rafael Gonzalez Soto - 1668038036'],
           bmInfo:['10fruttidistribuidora - 299264149755941', 'Insignia Store - 1132015993868794'],
           status:'active', balance:0, connection:'normal', currency:'VND', created:'11/03/2026 14:03', checked:false,
-          khoStatus:'đang cho thuê'
+          khoStatus:'đang cho thuê', rentStatus:'renting'
         },
         {
-          id:2, name:'17-3-250-Богдан 1-4243', type:'Bm tạo', accountId:'91181835493120',
+          id:2, name:'17-3-250-Богдан 1-4243', type:'Bm tạo', ownerType:'dn', accountId:'91181835493120',
           viaInfo:[
             'Andre | Ruthairat Wisuwannakorn - 760969474',
             'Christian Ardenne - 1237574425',
@@ -1845,28 +2374,28 @@
           ],
           bmInfo:['10fruttidistribuidora - 299264149755941'],
           status:'active', balance:0, connection:'normal', currency:'USD', created:'10/03/2026 17:53', checked:false,
-          khoStatus:'dừng cho thuê'
+          khoStatus:'dừng cho thuê', rentStatus:'free'
         },
         {
-          id:3, name:'RMFA US-RM TEST 3', type:'—', accountId:'act_333',
+          id:3, name:'RMFA US-RM TEST 3', type:'—', ownerType:'dn', accountId:'act_333',
           viaInfo:['Rinrin Sundari - 455541247467830'],
           bmInfo:['Techcu 05397050 - 185130878819889'],
           status:'active', balance:0, connection:'normal', currency:'USD', created:'12/04/2026 10:00', checked:false,
-          khoStatus:'rảnh'
+          khoStatus:'rảnh', rentStatus:'free'
         },
         {
-          id:4, name:'RMFA VN-RM TEST 4', type:'—', accountId:'act_444',
+          id:4, name:'RMFA VN-RM TEST 4', type:'—', ownerType:'cn', accountId:'act_444',
           viaInfo:['Tao Bai Bai - 270680949327953'],
           bmInfo:['THẮNG CS01 - 1353345999856117'],
           status:'active', balance:0, connection:'normal', currency:'VND', created:'12/04/2026 10:05', checked:false,
-          khoStatus:'rảnh'
+          khoStatus:'rảnh', rentStatus:'free'
         },
         {
-          id:5, name:'RMFA US-RM TEST 5', type:'—', accountId:'act_555',
+          id:5, name:'RMFA US-RM TEST 5', type:'—', ownerType:'cn', accountId:'act_555',
           viaInfo:['Umi Suprihatin - 425000552719319'],
           bmInfo:['24/2 Linh BM3 - 153219434449737'],
           status:'disabled', balance:0, connection:'normal', currency:'USD', created:'12/04/2026 10:10', checked:false,
-          khoStatus:'đang cho thuê'
+          khoStatus:'đang cho thuê', rentStatus:'renting'
         },
       ];
 
@@ -1912,6 +2441,8 @@
         tkqcFilterConnection: 'all',
         tkqcFilterToken: 'all',
         tkqcFilterBM: 'all',
+        tkqcFilterType: 'all',
+        tkqcFilterRent: 'all',
         tkqcFilterDate: '',
         tkqcFilterKho: 'all',
         // Via modal (Thêm / Chỉnh sửa)
@@ -1920,19 +2451,139 @@
         viaForm: { id:null, name:'', fbId:'', uid:'', adsPowerId:'', twofa:false, status:'ok', rentStatus:'free' },
         viaTokenResult: null,
         viaDeleteTarget: null,
+        // /sharetkqc — Source Policy
+        shareTkqcPolicy: {
+          mode: 'single',
+          singleType: 'dn',
+          ratioDN: 70,
+          ratioCN: 30,
+          fallbackPriority: 'dn',
+        },
+        // /sharetkqc — Limit theo CS
+        csLimitConfig: {
+          enabled: true,
+          defaultLimit: 20,
+          resetTime: '00:00 UTC+7',
+          overrides: [
+            { id:1, name:'Nguyễn CS Minh', username:'@cs_minh', limit: 30, usedToday: 18 },
+            { id:2, name:'Trần CS Lan',    username:'@cs_lan',  limit: null, usedToday: 5  },
+            { id:3, name:'Lê CS Hùng',     username:'@cs_hung', limit: 50, usedToday: 50 },
+          ],
+        },
+        // /sharetkqc — Limit theo Khách hàng
+        khLimitConfig: {
+          enabled: true,
+          defaultLimit: 20,
+          resetTime: '00:00 UTC+7',
+          overrides: [
+            { id:1, name:'Group KH Alpha', groupId:'-100123456789', tier:'VIP',      limit: 50,   usedToday: 12 },
+            { id:2, name:'Group KH Beta',  groupId:'-100987654321', tier:'Standard', limit: null, usedToday: 20 },
+            { id:3, name:'Group KH Gamma', groupId:'-100111222333', tier:'VIP',      limit: 50,   usedToday: 50 },
+          ],
+        },
+        // /sharetkqc — Limit Simulator
+        simulator: {
+          open: false,
+          cs: '@cs_minh',
+          group: 'Group KH Alpha',
+          requested: 10,
+          result: null,
+        },
+        // /sharetkqc — Audit log
+        auditSearch: '',
+        auditFilterStatus: 'all',
+        auditFilterFrom: '',
+        auditFilterTo: '',
+        auditDetail: null,
+        auditLogs: [
+          {
+            id: 1,
+            time: '2026-04-24 09:13:42',
+            username: '@cs_minh',
+            group: 'Group KH Alpha',
+            command: '/sharetkqc',
+            paramSummary: '248859189625309 | 5 TKQC | USD | GMT+0 | MANAGE',
+            status: 'success',
+            resultSummary: '5/5 thành công',
+            policySnapshot: 'Ratio 70/30',
+            csLimitSnapshot: '18/30',
+            khLimitSnapshot: '12/50',
+            items: [
+              { tkqcId:'act_111', name:'RMFA US-RM TEST 1', type:'dn', status:'success', error:'' },
+              { tkqcId:'act_222', name:'RMFA US-RM TEST 2', type:'dn', status:'success', error:'' },
+              { tkqcId:'act_333', name:'RMFA US-RM TEST 3', type:'dn', status:'success', error:'' },
+              { tkqcId:'act_444', name:'RMFA US-RM TEST 4', type:'dn', status:'success', error:'' },
+              { tkqcId:'act_555', name:'RMFA CN-RM TEST 5', type:'cn', status:'success', error:'' },
+            ],
+          },
+          {
+            id: 2,
+            time: '2026-04-24 10:05:11',
+            username: '@cs_lan',
+            group: 'Group KH Beta',
+            command: '/sharetkqc',
+            paramSummary: '556796570706576 | 3 TKQC | USD | GMT+3 | ADVERTISE+ANALYZE',
+            status: 'failed',
+            resultSummary: '2/3 thành công',
+            policySnapshot: 'Single: Doanh nghiệp',
+            csLimitSnapshot: '5/20',
+            khLimitSnapshot: '20/20',
+            items: [
+              { tkqcId:'act_666', name:'RMFA EU-RM TEST 6', type:'dn', status:'success', error:'' },
+              { tkqcId:'act_777', name:'RMFA EU-RM TEST 7', type:'dn', status:'success', error:'' },
+              { tkqcId:'act_888', name:'RMFA EU-RM TEST 8', type:'dn', status:'failed',  error:'BM đã đạt MAX_PARTNERS (25)' },
+            ],
+          },
+          {
+            id: 3,
+            time: '2026-04-24 11:22:07',
+            username: '@cs_hung',
+            group: 'Group KH Gamma',
+            command: '/sharetkqc',
+            paramSummary: '874125630012345 | 3 TKQC | USD | GMT+7 | MANAGE',
+            status: 'success',
+            resultSummary: '3/3 thành công',
+            policySnapshot: 'Ưu tiên và bù — DN trước',
+            csLimitSnapshot: '50/50',
+            khLimitSnapshot: '50/50',
+            items: [
+              { tkqcId:'act_111', name:'RMFA US-RM TEST 1', type:'dn', status:'success', error:'' },
+              { tkqcId:'act_222', name:'RMFA US-RM TEST 2', type:'dn', status:'success', error:'' },
+              { tkqcId:'act_333', name:'RMFA CN-RM TEST 3', type:'cn', status:'success', error:'' },
+            ],
+          },
+          {
+            id: 4,
+            time: '2026-04-24 13:47:55',
+            username: '@cs_minh',
+            group: 'Group KH Alpha',
+            command: '/sharetkqc',
+            paramSummary: '248859189625309 | 2 TKQC | USD | GMT+0 | MANAGE',
+            status: 'failed',
+            resultSummary: '0/2 — Token hết hạn',
+            policySnapshot: 'Tỉ lệ 50/50',
+            csLimitSnapshot: '20/30',
+            khLimitSnapshot: '14/50',
+            items: [
+              { tkqcId:'act_111', name:'RMFA US-RM TEST 1', type:'dn', status:'failed', error:'Token hết hạn' },
+              { tkqcId:'act_222', name:'RMFA CN-RM TEST 2', type:'cn', status:'failed', error:'Token hết hạn' },
+            ],
+          },
+        ],
         // BM tab state
         bmFilterName: '',
         bmFilterId: '',
         bmFilterStatus: 'all',
         bmFilterVia: 'all',
         bmFilterKho: 'all',
+        bmFilterRent: 'all',
         bmList: [
-          { id:1, name:'HT 61587543263043 G2', bmId:'1612622229924192', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:31', checked:false, khoStatus:'đang cho thuê' },
-          { id:2, name:'HT 61587392610582 G1', bmId:'4228520680734803', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965'], created:'01/04/2026 01:30', checked:false, khoStatus:'rảnh' },
-          { id:3, name:'HT 61587141163308 G2', bmId:'1421038349665727', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'dừng cho thuê' },
-          { id:4, name:'HT 61587535793525 G2', bmId:'1214901937492432', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'đang cho thuê' },
-          { id:5, name:'HT 61587450747987 G3', bmId:'909315744963488',  status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'rảnh' },
-          { id:6, name:'HT 61587079245891 G2', bmId:'2082353429197683', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Andre | Ruthairat Wisuwannakorn - 760969474','Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'rảnh' },
+          { id:1, name:'HT 61587543263043 G2', bmId:'1612622229924192', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:31', checked:false, khoStatus:'đang cho thuê', rentStatus:'renting' },
+          { id:2, name:'HT 61587392610582 G1', bmId:'4228520680734803', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965'], created:'01/04/2026 01:30', checked:false, khoStatus:'rảnh', rentStatus:'free' },
+          { id:3, name:'HT 61587141163308 G2', bmId:'1421038349665727', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'dừng cho thuê', rentStatus:'free' },
+          { id:4, name:'HT 61587535793525 G2', bmId:'1214901937492432', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'đang cho thuê', rentStatus:'renting' },
+          { id:5, name:'HT 61587450747987 G3', bmId:'909315744963488',  status:'disabled', connection:'connected', totalTkqc:0, viaList:['Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'rảnh', rentStatus:'free' },
+          { id:6, name:'HT 61587079245891 G2', bmId:'2082353429197683', status:'disabled', connection:'connected', totalTkqc:0, viaList:['Andre | Ruthairat Wisuwannakorn - 760969474','Leozinho Kit - 1379431965','Güven Taner Ayyıldız - 714239842'], created:'01/04/2026 01:30', checked:false, khoStatus:'rảnh', rentStatus:'free' },
         ],
         // ── Quản lý / Thu hồi TKQC (panel-based)
         rvViaSearch: '',
@@ -2039,7 +2690,9 @@
           const s = this.tkqcFilterStatus === 'all' || acc.status === this.tkqcFilterStatus;
           const c = this.tkqcFilterConnection === 'all' || acc.connection === this.tkqcFilterConnection;
           const k = this.tkqcFilterKho === 'all' || acc.khoStatus === this.tkqcFilterKho;
-          return n && i && s && c && k;
+          const t = this.tkqcFilterType === 'all' || (acc.ownerType || 'dn') === this.tkqcFilterType;
+          const r = this.tkqcFilterRent === 'all' || (acc.rentStatus || 'free') === this.tkqcFilterRent;
+          return n && i && s && c && k && t && r;
         });
       },
       tkqcKhoStats() {
@@ -2056,7 +2709,8 @@
           const i = !this.bmFilterId   || bm.bmId.includes(this.bmFilterId);
           const s = this.bmFilterStatus === 'all' || bm.status === this.bmFilterStatus;
           const k = this.bmFilterKho === 'all' || bm.khoStatus === this.bmFilterKho;
-          return n && i && s && k;
+          const r = this.bmFilterRent === 'all' || (bm.rentStatus || 'free') === this.bmFilterRent;
+          return n && i && s && k && r;
         });
       },
       filteredFanpages() {
@@ -2073,12 +2727,32 @@
       totalFpFollows() {
         return this.filteredFanpages.reduce((sum, fp) => sum + fp.follows, 0);
       },
+      filteredAuditLogs() {
+        const q = this.auditSearch.trim().toLowerCase();
+        return this.auditLogs.filter(log => {
+          if (q) {
+            const hay = (log.username + ' ' + log.group + ' ' + log.command + ' ' + log.paramSummary).toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          if (this.auditFilterStatus !== 'all' && log.status !== this.auditFilterStatus) return false;
+          const day = log.time.slice(0, 10);
+          if (this.auditFilterFrom && day < this.auditFilterFrom) return false;
+          if (this.auditFilterTo && day > this.auditFilterTo) return false;
+          return true;
+        });
+      },
     },
     methods: {
       bmTkqcShareCount(bm) {
         return this.adAccounts.filter(acc =>
           (acc.bmInfo || []).some(b => b.includes(bm.bmId))
         ).length;
+      },
+      toggleTkqcRent(acc) {
+        acc.rentStatus = (acc.rentStatus || 'free') === 'renting' ? 'free' : 'renting';
+      },
+      toggleBmRent(bm) {
+        bm.rentStatus = (bm.rentStatus || 'free') === 'renting' ? 'free' : 'renting';
       },
       openAddVia() {
         this.viaModalMode = 'add';
@@ -2156,6 +2830,147 @@
             ? `Token còn hiệu lực (${days} ngày, hết hạn ${via.tokenExp || '—'})`
             : `Token không hợp lệ hoặc đã hết hạn${via.tokenExp ? ' (hết hạn ' + via.tokenExp + ')' : ''}`,
         };
+      },
+      // /sharetkqc — Source Policy
+      onRatioDN(val) {
+        let n = parseInt(val, 10);
+        if (isNaN(n)) n = 0;
+        n = Math.max(0, Math.min(100, n));
+        this.shareTkqcPolicy.ratioDN = n;
+        this.shareTkqcPolicy.ratioCN = 100 - n;
+      },
+      onRatioCN(val) {
+        let n = parseInt(val, 10);
+        if (isNaN(n)) n = 0;
+        n = Math.max(0, Math.min(100, n));
+        this.shareTkqcPolicy.ratioCN = n;
+        this.shareTkqcPolicy.ratioDN = 100 - n;
+      },
+      saveSharePolicy() {
+        const p = this.shareTkqcPolicy;
+        let msg = 'Đã lưu cấu hình: ';
+        if (p.mode === 'single') msg += `Nguồn đơn — ${p.singleType === 'dn' ? 'Doanh nghiệp' : 'Cá nhân'}`;
+        else if (p.mode === 'ratio') msg += `Tỉ lệ ${p.ratioDN}/${p.ratioCN}`;
+        else msg += `Ưu tiên và bù — ưu tiên ${p.fallbackPriority === 'dn' ? 'Doanh nghiệp' : 'Cá nhân'}`;
+        alert(msg);
+      },
+      saveAllShareConfig() {
+        const p = this.shareTkqcPolicy;
+        let policyMsg;
+        if (p.mode === 'single') policyMsg = `Nguồn đơn — ${p.singleType === 'dn' ? 'DN' : 'CN'}`;
+        else if (p.mode === 'ratio') policyMsg = `Tỉ lệ ${p.ratioDN}/${p.ratioCN}`;
+        else policyMsg = `Ưu tiên ${p.fallbackPriority === 'dn' ? 'DN' : 'CN'} trước`;
+        alert(
+          'Đã lưu cấu hình:\n' +
+          '• Nguồn TKQC: ' + policyMsg + '\n' +
+          '• Limit CS: ' + (this.csLimitConfig.enabled ? `bật (mặc định ${this.csLimitConfig.defaultLimit}, ${this.csLimitConfig.overrides.length} override)` : 'tắt') + '\n' +
+          '• Limit KH: ' + (this.khLimitConfig.enabled ? `bật (mặc định ${this.khLimitConfig.defaultLimit}, ${this.khLimitConfig.overrides.length} override)` : 'tắt')
+        );
+      },
+      // /sharetkqc — CS limit helpers
+      csInitials(name) {
+        const parts = (name || '').trim().split(/\s+/);
+        return ((parts[0]?.[0] || '') + (parts[parts.length - 1]?.[0] || '')).toUpperCase();
+      },
+      csAvatarColor(id) {
+        const palette = ['#2563eb','#f59e0b','#10b981','#ec4899','#8b5cf6','#06b6d4','#f97316'];
+        return palette[id % palette.length];
+      },
+      csEffectiveLimit(cs) {
+        const v = cs.limit == null || cs.limit === '' ? this.csLimitConfig.defaultLimit : cs.limit;
+        return Number(v) || 0;
+      },
+      csUsedPct(cs) {
+        const lim = this.csEffectiveLimit(cs);
+        if (!lim) return 0;
+        return Math.min(100, Math.round((cs.usedToday / lim) * 100));
+      },
+      csRemaining(cs) {
+        return Math.max(0, this.csEffectiveLimit(cs) - cs.usedToday);
+      },
+      resetCsUsed(cs) {
+        cs.usedToday = 0;
+      },
+      addCsOverride() {
+        const name = prompt('Tên CS:');
+        if (!name) return;
+        const username = prompt('Username Telegram (vd: @cs_xyz):') || '';
+        const newId = (this.csLimitConfig.overrides.reduce((m, x) => Math.max(m, x.id), 0)) + 1;
+        this.csLimitConfig.overrides.push({ id:newId, name:name.trim(), username:username.trim(), limit:null, usedToday:0 });
+      },
+      // /sharetkqc — KH limit helpers
+      khEffectiveLimit(g) {
+        const v = g.limit == null || g.limit === '' ? this.khLimitConfig.defaultLimit : g.limit;
+        return Number(v) || 0;
+      },
+      khUsedPct(g) {
+        const lim = this.khEffectiveLimit(g);
+        if (!lim) return 0;
+        return Math.min(100, Math.round((g.usedToday / lim) * 100));
+      },
+      khRemaining(g) {
+        return Math.max(0, this.khEffectiveLimit(g) - g.usedToday);
+      },
+      resetKhUsed(g) {
+        g.usedToday = 0;
+      },
+      addKhOverride() {
+        const name = prompt('Tên Group:');
+        if (!name) return;
+        const groupId = prompt('Group ID Telegram (vd: -100xxxxxxxxxx):') || '';
+        const tier = (prompt('Tier (VIP / Standard):') || 'Standard').trim();
+        const newId = (this.khLimitConfig.overrides.reduce((m, x) => Math.max(m, x.id), 0)) + 1;
+        this.khLimitConfig.overrides.push({
+          id:newId, name:name.trim(), groupId:groupId.trim(),
+          tier: tier.toUpperCase() === 'VIP' ? 'VIP' : 'Standard',
+          limit:null, usedToday:0,
+        });
+      },
+      // /sharetkqc — Limit Simulator
+      runSimulator() {
+        const csIn = (this.simulator.cs || '').trim().toLowerCase();
+        const grIn = (this.simulator.group || '').trim().toLowerCase();
+        const req  = Math.max(0, parseInt(this.simulator.requested, 10) || 0);
+        const cs = this.csLimitConfig.overrides.find(x =>
+          x.username.toLowerCase() === csIn || x.name.toLowerCase() === csIn);
+        const gr = this.khLimitConfig.overrides.find(x =>
+          x.name.toLowerCase() === grIn || x.groupId === this.simulator.group);
+        const csRemaining = this.csLimitConfig.enabled
+          ? (cs ? this.csRemaining(cs) : this.csLimitConfig.defaultLimit)
+          : Infinity;
+        const khRemaining = this.khLimitConfig.enabled
+          ? (gr ? this.khRemaining(gr) : this.khLimitConfig.defaultLimit)
+          : Infinity;
+        const canShare = Math.min(req, csRemaining, khRemaining);
+        this.simulator.result = {
+          csName: cs ? cs.username : (csIn || '(không tìm thấy)'),
+          groupName: gr ? gr.name : (grIn || '(không tìm thấy)'),
+          csRemaining: csRemaining === Infinity ? '∞' : csRemaining,
+          khRemaining: khRemaining === Infinity ? '∞' : khRemaining,
+          requested: req,
+          canShare,
+        };
+      },
+      // /sharetkqc — Audit log
+      auditStatusClass(s) {
+        return s === 'success' ? 'bg-green' : 'bg-red';
+      },
+      auditStatusLabel(s) {
+        return s === 'success' ? 'Success' : 'Failed';
+      },
+      openAuditDetail(log) { this.auditDetail = log; },
+      exportAuditCsv() {
+        const rows = [['Thời gian','Username','Group','Lệnh','Tham số','Trạng thái','Kết quả']];
+        this.filteredAuditLogs.forEach(l => {
+          rows.push([l.time, l.username, l.group, l.command, l.paramSummary, l.status, l.resultSummary]);
+        });
+        const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `audit-log-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
       },
     },
   }).mount('#app');
