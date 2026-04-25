@@ -1212,6 +1212,28 @@
               <!-- TKQC Content -->
               <div style="flex:1; padding:14px 16px; overflow-x:auto;">
 
+                <!-- Bulk action bar — hiện khi có TKQC được chọn -->
+                <div v-if="tkqcSelectedCount > 0"
+                     style="display:flex; align-items:center; gap:10px; margin-bottom:12px; padding:10px 14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; flex-wrap:wrap;">
+                  <div style="font-size:13px; font-weight:600; color:var(--accent);">
+                    Đã chọn <strong>{{ tkqcSelectedCount }}</strong> TKQC
+                  </div>
+                  <span style="color:#94a3b8;">•</span>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:12.5px; color:#475569;">Gán vào nhóm CS:</span>
+                    <select class="fs" aria-label="Nhóm CS bulk" v-model="tkqcBulkGroupId" style="min-width:160px;">
+                      <option :value="null">— Bỏ gán —</option>
+                      <option v-for="grp in csGroups" :key="grp.id" :value="grp.id">{{ grp.name }}</option>
+                    </select>
+                    <button class="btn btn-green" style="padding:6px 12px; font-size:12.5px;" @click="bulkAssignCsGroup">
+                      Áp dụng
+                    </button>
+                  </div>
+                  <button class="btn btn-ghost" style="padding:6px 10px; font-size:12px; margin-left:auto;" @click="clearTkqcSelection">
+                    Bỏ chọn tất cả
+                  </button>
+                </div>
+
                 <!-- Action buttons -->
                 <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
                   <button class="btn btn-green">
@@ -1225,6 +1247,10 @@
                   <button class="btn btn-dark">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                     Danh sách tài khoản chưa có trên hệ thống
+                  </button>
+                  <button class="btn btn-ghost" @click="openCsGroupModal()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg>
+                    Tạo nhóm CS
                   </button>
                 </div>
 
@@ -1307,7 +1333,7 @@
                     <thead>
                       <tr>
                         <th style="width:38px; text-align:center;">
-                          <input type="checkbox" style="width:14px; height:14px; accent-color:var(--accent); cursor:pointer;" />
+                          <input type="checkbox" aria-label="Chọn tất cả TKQC hiển thị" :checked="tkqcAllVisibleChecked" @change="toggleTkqcSelectAll($event.target.checked)" style="width:14px; height:14px; accent-color:var(--accent); cursor:pointer;" />
                         </th>
                         <th style="min-width:180px;">Tên tài khoản</th>
                         <th style="min-width:145px;">ID tài khoản</th>
@@ -1318,6 +1344,7 @@
                         <th style="min-width:120px;">Trạng thái kết nối</th>
                         <th style="width:70px;">Tiền tệ</th>
                         <th style="min-width:140px;">Trạng thái thuê</th>
+                        <th style="min-width:160px;">Dùng cho nhóm CS</th>
                         <th style="min-width:130px;">Ngày tạo</th>
                         <th style="width:100px; text-align:center;">Thao tác</th>
                       </tr>
@@ -1380,6 +1407,12 @@
                             {{ (acc.rentStatus || 'free') === 'renting' ? 'Đang cho thuê' : 'Rảnh' }}
                           </button>
                         </td>
+                        <td style="vertical-align:middle;">
+                          <select class="fs" aria-label="Chọn nhóm CS" v-model="acc.csGroupId" style="min-width:140px;">
+                            <option :value="null">— Chưa gán —</option>
+                            <option v-for="grp in csGroups" :key="grp.id" :value="grp.id">{{ grp.name }}</option>
+                          </select>
+                        </td>
                         <td style="vertical-align:middle; color:#64748b; font-size:12.5px;">{{ acc.created }}</td>
                         <td style="vertical-align:middle; text-align:center;">
                           <div style="display:flex; gap:3px; justify-content:center;">
@@ -1417,6 +1450,60 @@
                     <span style="color:#94a3b8; padding:0 2px;">...</span>
                     <button class="pb">598</button>
                     <button class="pb"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Modal: Tạo / Chỉnh sửa nhóm CS -->
+              <div v-if="csGroupModalOpen"
+                   style="position:fixed; inset:0; background:rgba(15,23,42,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;"
+                   @click.self="closeCsGroupModal">
+                <div style="background:#fff; width:520px; max-width:96vw; max-height:90vh; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,0.25); display:flex; flex-direction:column; overflow:hidden;">
+                  <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
+                    <div style="font-weight:600; font-size:15px; color:var(--text-primary);">
+                      {{ csGroupForm.id ? 'Chỉnh sửa nhóm CS' : 'Tạo nhóm CS mới' }}
+                    </div>
+                    <button @click="closeCsGroupModal" aria-label="Đóng" style="background:none; border:none; cursor:pointer; color:#64748b; padding:4px;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                  <div style="padding:16px 18px; overflow-y:auto; display:flex; flex-direction:column; gap:14px;">
+                    <div>
+                      <div style="font-size:11px; color:#94a3b8; margin-bottom:4px; font-weight:500;">Tên nhóm *</div>
+                      <input class="fi" v-model="csGroupForm.name" placeholder="Vd: Nhóm Hà..." />
+                    </div>
+                    <div>
+                      <div style="font-size:11px; color:#94a3b8; margin-bottom:4px; font-weight:500;">Nhóm trưởng (Username Telegram) *</div>
+                      <input class="fi" v-model="csGroupForm.leader" placeholder="@truongnhom" />
+                    </div>
+                    <div>
+                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                        <div style="font-size:11px; color:#94a3b8; font-weight:500;">Thành viên (Username Telegram)</div>
+                        <button class="btn btn-ghost" style="padding:3px 8px; font-size:11.5px;" @click="csGroupForm.members.push('')">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                          Thêm dòng
+                        </button>
+                      </div>
+                      <div style="display:flex; flex-direction:column; gap:6px;">
+                        <div v-for="(m, i) in csGroupForm.members" :key="i" style="display:flex; align-items:center; gap:6px;">
+                          <input class="fi" v-model="csGroupForm.members[i]" :placeholder="'@thanhvien' + (i+1)" style="flex:1;" />
+                          <button class="ab" aria-label="Xóa thành viên" title="Xóa" style="background:#fef2f2; border:1px solid #fecaca;" @click="csGroupForm.members.splice(i, 1)">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          </button>
+                        </div>
+                        <div v-if="!csGroupForm.members.length" style="font-size:12px; color:#94a3b8; font-style:italic;">Chưa có thành viên — bấm "Thêm dòng" để thêm.</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:space-between; align-items:center; background:#f8fafc;">
+                    <button v-if="csGroupForm.id" class="btn" style="background:#fef2f2; color:#ef4444; border:1px solid #fecaca;" @click="deleteCsGroup">Xóa nhóm</button>
+                    <span v-else></span>
+                    <div style="display:flex; gap:8px;">
+                      <button class="btn" style="background:#f1f5f9; color:#475569;" @click="closeCsGroupModal">Hủy</button>
+                      <button class="btn btn-green" @click="saveCsGroup">
+                        {{ csGroupForm.id ? 'Lưu thay đổi' : 'Tạo nhóm' }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1848,8 +1935,13 @@
                 <div style="font-size:11.5px; color:#94a3b8; font-style:italic;">Reset lúc {{ csLimitConfig.resetTime }} mỗi ngày</div>
               </div>
 
+              <!-- Search -->
+              <div v-if="csLimitConfig.enabled" style="margin-top:14px; max-width:280px;">
+                <input class="fi" aria-label="Tìm CS theo username" placeholder="Tìm theo username (vd: @cs_minh)..." v-model="csLimitSearch" />
+              </div>
+
               <!-- Override table -->
-              <div v-if="csLimitConfig.enabled" style="margin-top:14px; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+              <div v-if="csLimitConfig.enabled" style="margin-top:10px; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
                 <table class="dt">
                   <thead>
                     <tr>
@@ -1862,7 +1954,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="cs in csLimitConfig.overrides" :key="cs.id">
+                    <tr v-for="cs in filteredCsOverrides" :key="cs.id">
                       <td style="vertical-align:middle;">
                         <div style="display:flex; align-items:center; gap:8px;">
                           <div :style="{ width:'30px', height:'30px', borderRadius:'50%', background: csAvatarColor(cs.id), color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'11px', fontWeight:'700' }">
@@ -1894,17 +1986,11 @@
                         </button>
                       </td>
                     </tr>
-                    <tr v-if="!csLimitConfig.overrides.length">
-                      <td colspan="6" style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Chưa có override CS nào</td>
+                    <tr v-if="!filteredCsOverrides.length">
+                      <td colspan="6" style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Không tìm thấy CS nào</td>
                     </tr>
                   </tbody>
                 </table>
-                <div style="padding:10px 14px; border-top:1px solid var(--border); background:#fafafa;">
-                  <button class="btn btn-ghost" style="font-size:12.5px;" @click="addCsOverride">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Thêm CS
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -1932,8 +2018,42 @@
                 <div style="font-size:11.5px; color:#94a3b8; font-style:italic;">Reset lúc {{ khLimitConfig.resetTime }} mỗi ngày</div>
               </div>
 
+              <!-- Limit theo Tier -->
+              <div v-if="khLimitConfig.enabled" style="margin-top:14px; padding:12px 14px; background:#f8fafc; border:1px solid var(--border); border-radius:10px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+                  <div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">Limit theo Tier</div>
+                    <div style="font-size:11.5px; color:#94a3b8;">Đặt nhanh limit cho tất cả Group thuộc cùng Tier</div>
+                  </div>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px;">
+                  <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; background:#fff; border:1px solid var(--border); border-radius:8px;">
+                    <span class="badge bg-amber" style="flex-shrink:0;">VIP</span>
+                    <input class="fi" type="number" min="0" aria-label="Limit VIP" placeholder="Limit cho VIP..." v-model.number="khTierLimits.VIP" style="flex:1; min-width:80px;" />
+                    <button class="btn btn-green" style="padding:4px 10px; font-size:12px; white-space:nowrap;" @click="applyTierLimit('VIP')">
+                      Áp dụng
+                    </button>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px; padding:8px 10px; background:#fff; border:1px solid var(--border); border-radius:8px;">
+                    <span class="badge bg-blue" style="flex-shrink:0;">Standard</span>
+                    <input class="fi" type="number" min="0" aria-label="Limit Standard" placeholder="Limit cho Standard..." v-model.number="khTierLimits.Standard" style="flex:1; min-width:80px;" />
+                    <button class="btn btn-green" style="padding:4px 10px; font-size:12px; white-space:nowrap;" @click="applyTierLimit('Standard')">
+                      Áp dụng
+                    </button>
+                  </div>
+                </div>
+                <div style="margin-top:8px; font-size:11.5px; color:#94a3b8; font-style:italic;">
+                  Bấm "Áp dụng" sẽ ghi đè cột "Limit riêng" cho tất cả Group cùng Tier ({{ countByTier('VIP') }} VIP / {{ countByTier('Standard') }} Standard).
+                </div>
+              </div>
+
+              <!-- Search -->
+              <div v-if="khLimitConfig.enabled" style="margin-top:14px; max-width:340px;">
+                <input class="fi" aria-label="Tìm Group theo tên hoặc ID" placeholder="Tìm theo tên Group hoặc Group ID..." v-model="khLimitSearch" />
+              </div>
+
               <!-- Override table -->
-              <div v-if="khLimitConfig.enabled" style="margin-top:14px; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+              <div v-if="khLimitConfig.enabled" style="margin-top:10px; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
                 <table class="dt">
                   <thead>
                     <tr>
@@ -1947,11 +2067,18 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="g in khLimitConfig.overrides" :key="g.id">
+                    <tr v-for="g in filteredKhOverrides" :key="g.id">
                       <td style="vertical-align:middle; font-size:13px; font-weight:600; color:var(--text-primary);">{{ g.name }}</td>
                       <td style="vertical-align:middle; font-size:12.5px; color:#374151;" class="mono">{{ g.groupId }}</td>
                       <td style="vertical-align:middle;">
-                        <span :class="['badge', g.tier === 'VIP' ? 'bg-amber' : 'bg-blue']">{{ g.tier }}</span>
+                        <button
+                          @click="toggleKhTier(g)"
+                          :class="['badge', g.tier === 'VIP' ? 'bg-amber' : 'bg-blue']"
+                          :title="g.tier === 'VIP' ? 'Nhấn để chuyển sang Standard' : 'Nhấn để chuyển sang VIP'"
+                          style="border:none; cursor:pointer;">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                          {{ g.tier }}
+                        </button>
                       </td>
                       <td style="vertical-align:middle;">
                         <input class="fi" type="number" min="0" aria-label="Limit riêng KH" placeholder="Dùng mặc định" v-model.number="g.limit" style="width:110px;" />
@@ -1975,17 +2102,11 @@
                         </button>
                       </td>
                     </tr>
-                    <tr v-if="!khLimitConfig.overrides.length">
-                      <td colspan="7" style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Chưa có override Group nào</td>
+                    <tr v-if="!filteredKhOverrides.length">
+                      <td colspan="7" style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Không tìm thấy Group nào</td>
                     </tr>
                   </tbody>
                 </table>
-                <div style="padding:10px 14px; border-top:1px solid var(--border); background:#fafafa;">
-                  <button class="btn btn-ghost" style="font-size:12.5px;" @click="addKhOverride">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Thêm Group
-                  </button>
-                </div>
               </div>
 
               <!-- Limit Simulator -->
@@ -2351,7 +2472,7 @@
           viaInfo:['Rafael Gonzalez Soto - 1668038036'],
           bmInfo:['10fruttidistribuidora - 299264149755941', 'Insignia Store - 1132015993868794'],
           status:'active', balance:0, connection:'normal', currency:'VND', created:'11/03/2026 14:03', checked:false,
-          khoStatus:'đang cho thuê', rentStatus:'renting'
+          khoStatus:'đang cho thuê', rentStatus:'renting', csGroupId:1
         },
         {
           id:2, name:'17-3-250-Богдан 1-4243', type:'Bm tạo', ownerType:'dn', accountId:'91181835493120',
@@ -2374,28 +2495,28 @@
           ],
           bmInfo:['10fruttidistribuidora - 299264149755941'],
           status:'active', balance:0, connection:'normal', currency:'USD', created:'10/03/2026 17:53', checked:false,
-          khoStatus:'dừng cho thuê', rentStatus:'free'
+          khoStatus:'dừng cho thuê', rentStatus:'free', csGroupId:2
         },
         {
           id:3, name:'RMFA US-RM TEST 3', type:'—', ownerType:'dn', accountId:'act_333',
           viaInfo:['Rinrin Sundari - 455541247467830'],
           bmInfo:['Techcu 05397050 - 185130878819889'],
           status:'active', balance:0, connection:'normal', currency:'USD', created:'12/04/2026 10:00', checked:false,
-          khoStatus:'rảnh', rentStatus:'free'
+          khoStatus:'rảnh', rentStatus:'free', csGroupId:3
         },
         {
           id:4, name:'RMFA VN-RM TEST 4', type:'—', ownerType:'cn', accountId:'act_444',
           viaInfo:['Tao Bai Bai - 270680949327953'],
           bmInfo:['THẮNG CS01 - 1353345999856117'],
           status:'active', balance:0, connection:'normal', currency:'VND', created:'12/04/2026 10:05', checked:false,
-          khoStatus:'rảnh', rentStatus:'free'
+          khoStatus:'rảnh', rentStatus:'free', csGroupId:null
         },
         {
           id:5, name:'RMFA US-RM TEST 5', type:'—', ownerType:'cn', accountId:'act_555',
           viaInfo:['Umi Suprihatin - 425000552719319'],
           bmInfo:['24/2 Linh BM3 - 153219434449737'],
           status:'disabled', balance:0, connection:'normal', currency:'USD', created:'12/04/2026 10:10', checked:false,
-          khoStatus:'đang cho thuê', rentStatus:'renting'
+          khoStatus:'đang cho thuê', rentStatus:'renting', csGroupId:2
         },
       ];
 
@@ -2443,6 +2564,15 @@
         tkqcFilterBM: 'all',
         tkqcFilterType: 'all',
         tkqcFilterRent: 'all',
+        // CS Groups (dùng chung cho TKQC)
+        csGroups: [
+          { id:1, name:'Nhóm Hà',    leader:'@ha_leader',    members:['@ha_minh','@ha_lan'] },
+          { id:2, name:'Nhóm Hoàn',  leader:'@hoan_leader',  members:['@hoan_tuan','@hoan_ngoc'] },
+          { id:3, name:'Nhóm Mạnh',  leader:'@manh_leader',  members:['@manh_phong','@manh_huy','@manh_anh'] },
+        ],
+        csGroupModalOpen: false,
+        csGroupForm: { id:null, name:'', leader:'', members:[''] },
+        tkqcBulkGroupId: null,
         tkqcFilterDate: '',
         tkqcFilterKho: 'all',
         // Via modal (Thêm / Chỉnh sửa)
@@ -2470,6 +2600,7 @@
             { id:3, name:'Lê CS Hùng',     username:'@cs_hung', limit: 50, usedToday: 50 },
           ],
         },
+        csLimitSearch: '',
         // /sharetkqc — Limit theo Khách hàng
         khLimitConfig: {
           enabled: true,
@@ -2481,6 +2612,8 @@
             { id:3, name:'Group KH Gamma', groupId:'-100111222333', tier:'VIP',      limit: 50,   usedToday: 50 },
           ],
         },
+        khLimitSearch: '',
+        khTierLimits: { VIP: 50, Standard: 20 },
         // /sharetkqc — Limit Simulator
         simulator: {
           open: false,
@@ -2727,6 +2860,25 @@
       totalFpFollows() {
         return this.filteredFanpages.reduce((sum, fp) => sum + fp.follows, 0);
       },
+      tkqcSelectedCount() {
+        return this.adAccounts.filter(a => a.checked).length;
+      },
+      tkqcAllVisibleChecked() {
+        const list = this.filteredAdAccounts;
+        return list.length > 0 && list.every(a => a.checked);
+      },
+      filteredCsOverrides() {
+        const q = (this.csLimitSearch || '').trim().toLowerCase();
+        if (!q) return this.csLimitConfig.overrides;
+        return this.csLimitConfig.overrides.filter(cs =>
+          (cs.username || '').toLowerCase().includes(q));
+      },
+      filteredKhOverrides() {
+        const q = (this.khLimitSearch || '').trim().toLowerCase();
+        if (!q) return this.khLimitConfig.overrides;
+        return this.khLimitConfig.overrides.filter(g =>
+          (g.name || '').toLowerCase().includes(q) || (g.groupId || '').includes(this.khLimitSearch.trim()));
+      },
       filteredAuditLogs() {
         const q = this.auditSearch.trim().toLowerCase();
         return this.auditLogs.filter(log => {
@@ -2750,6 +2902,63 @@
       },
       toggleTkqcRent(acc) {
         acc.rentStatus = (acc.rentStatus || 'free') === 'renting' ? 'free' : 'renting';
+      },
+      toggleTkqcSelectAll(val) {
+        this.filteredAdAccounts.forEach(a => { a.checked = !!val; });
+      },
+      clearTkqcSelection() {
+        this.adAccounts.forEach(a => { a.checked = false; });
+      },
+      bulkAssignCsGroup() {
+        const list = this.adAccounts.filter(a => a.checked);
+        if (!list.length) return;
+        const gid = this.tkqcBulkGroupId;
+        const grpName = gid == null ? '— Chưa gán —' : (this.csGroups.find(g => g.id === gid)?.name || '?');
+        if (!confirm(`Gán ${list.length} TKQC vào nhóm "${grpName}"?`)) return;
+        list.forEach(a => { a.csGroupId = gid; });
+        alert(`Đã gán ${list.length} TKQC vào "${grpName}".`);
+      },
+      openCsGroupModal(group) {
+        if (group) {
+          this.csGroupForm = {
+            id: group.id,
+            name: group.name,
+            leader: group.leader,
+            members: [...group.members],
+          };
+        } else {
+          this.csGroupForm = { id:null, name:'', leader:'', members:[''] };
+        }
+        this.csGroupModalOpen = true;
+      },
+      closeCsGroupModal() {
+        this.csGroupModalOpen = false;
+      },
+      saveCsGroup() {
+        const f = this.csGroupForm;
+        if (!f.name.trim()) { alert('Vui lòng nhập tên nhóm'); return; }
+        if (!f.leader.trim()) { alert('Vui lòng nhập username nhóm trưởng'); return; }
+        const members = f.members.map(m => (m || '').trim()).filter(Boolean);
+        if (f.id) {
+          const target = this.csGroups.find(g => g.id === f.id);
+          if (target) {
+            target.name = f.name.trim();
+            target.leader = f.leader.trim();
+            target.members = members;
+          }
+        } else {
+          const newId = (this.csGroups.reduce((m, g) => Math.max(m, g.id), 0)) + 1;
+          this.csGroups.push({ id:newId, name:f.name.trim(), leader:f.leader.trim(), members });
+        }
+        this.csGroupModalOpen = false;
+      },
+      deleteCsGroup() {
+        if (!this.csGroupForm.id) return;
+        if (!confirm(`Xóa nhóm "${this.csGroupForm.name}"? Các TKQC đã gán nhóm này sẽ về "Chưa gán".`)) return;
+        const id = this.csGroupForm.id;
+        this.csGroups = this.csGroups.filter(g => g.id !== id);
+        this.adAccounts.forEach(a => { if (a.csGroupId === id) a.csGroupId = null; });
+        this.csGroupModalOpen = false;
       },
       toggleBmRent(bm) {
         bm.rentStatus = (bm.rentStatus || 'free') === 'renting' ? 'free' : 'renting';
@@ -2891,13 +3100,6 @@
       resetCsUsed(cs) {
         cs.usedToday = 0;
       },
-      addCsOverride() {
-        const name = prompt('Tên CS:');
-        if (!name) return;
-        const username = prompt('Username Telegram (vd: @cs_xyz):') || '';
-        const newId = (this.csLimitConfig.overrides.reduce((m, x) => Math.max(m, x.id), 0)) + 1;
-        this.csLimitConfig.overrides.push({ id:newId, name:name.trim(), username:username.trim(), limit:null, usedToday:0 });
-      },
       // /sharetkqc — KH limit helpers
       khEffectiveLimit(g) {
         const v = g.limit == null || g.limit === '' ? this.khLimitConfig.defaultLimit : g.limit;
@@ -2914,17 +3116,22 @@
       resetKhUsed(g) {
         g.usedToday = 0;
       },
-      addKhOverride() {
-        const name = prompt('Tên Group:');
-        if (!name) return;
-        const groupId = prompt('Group ID Telegram (vd: -100xxxxxxxxxx):') || '';
-        const tier = (prompt('Tier (VIP / Standard):') || 'Standard').trim();
-        const newId = (this.khLimitConfig.overrides.reduce((m, x) => Math.max(m, x.id), 0)) + 1;
-        this.khLimitConfig.overrides.push({
-          id:newId, name:name.trim(), groupId:groupId.trim(),
-          tier: tier.toUpperCase() === 'VIP' ? 'VIP' : 'Standard',
-          limit:null, usedToday:0,
-        });
+      toggleKhTier(g) {
+        g.tier = g.tier === 'VIP' ? 'Standard' : 'VIP';
+      },
+      countByTier(tier) {
+        return this.khLimitConfig.overrides.filter(g => g.tier === tier).length;
+      },
+      applyTierLimit(tier) {
+        const v = this.khTierLimits[tier];
+        const num = v == null || v === '' ? null : Number(v);
+        if (num == null || isNaN(num) || num < 0) {
+          alert('Vui lòng nhập limit hợp lệ cho ' + tier);
+          return;
+        }
+        const list = this.khLimitConfig.overrides.filter(g => g.tier === tier);
+        list.forEach(g => { g.limit = num; });
+        alert(`Đã áp dụng limit ${num} cho ${list.length} Group ${tier}.`);
       },
       // /sharetkqc — Limit Simulator
       runSimulator() {
