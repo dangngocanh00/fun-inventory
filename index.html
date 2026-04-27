@@ -1936,7 +1936,7 @@
         </div>
 
         <!-- ══ MODULE: LỆNH BOT (shared placeholder) ══ -->
-        <div v-if="activeLenhBot && activeModule !== 'sharetkqc' && activeModule !== 'revoketkqc' && activeModule !== 'scanbm'" class="fade-in">
+        <div v-if="activeLenhBot && activeModule !== 'sharetkqc' && activeModule !== 'revoketkqc' && activeModule !== 'scanbm' && activeModule !== 'checktkqc'" class="fade-in">
           <div style="background:white; border-radius:12px; border:1px solid var(--border); padding:32px; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
               <div style="font-size:18px; font-weight:700; color:var(--text-primary);">{{ activeLenhBot.label }}</div>
@@ -2894,6 +2894,340 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
           </div>
         </div>
 
+        <!-- ══ MODULE: CHECK TKQC ══ -->
+        <div v-if="activeModule === 'checktkqc'" class="fade-in">
+
+          <!-- Section 1: Limit theo CS -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Limit số lần check theo CS</div>
+                <span class="mono" style="padding:3px 10px; border-radius:6px; font-size:12px; font-weight:500; background:#eff6ff; color:var(--accent);">/checktkqc</span>
+              </div>
+              <div style="font-size:12px; color:#64748b; margin-top:2px;">Số lần tối đa mỗi CS có thể gọi /checktkqc trong 1 ngày</div>
+            </div>
+            <div style="padding:14px 18px;">
+              <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <span @click="checkCsLimitConfig.enabled = !checkCsLimitConfig.enabled"
+                        :style="{ width:'36px', height:'20px', borderRadius:'10px', background: checkCsLimitConfig.enabled ? 'var(--accent)' : '#cbd5e1', position:'relative', transition:'background .15s', flexShrink:0 }">
+                    <span :style="{ position:'absolute', top:'2px', left: checkCsLimitConfig.enabled ? '18px' : '2px', width:'16px', height:'16px', borderRadius:'50%', background:'#fff', transition:'left .15s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)' }"></span>
+                  </span>
+                  <span style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ checkCsLimitConfig.enabled ? 'Đang bật' : 'Đã tắt (không giới hạn)' }}</span>
+                </label>
+                <div v-if="checkCsLimitConfig.enabled" style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12.5px; color:#64748b;">Limit mặc định (lần/ngày):</span>
+                  <input class="fi" type="number" min="0" aria-label="Limit mặc định check CS" v-model.number="checkCsLimitConfig.defaultLimit" style="width:90px;" />
+                </div>
+                <div style="font-size:11.5px; color:#94a3b8; font-style:italic;">Reset lúc {{ checkCsLimitConfig.resetTime }} mỗi ngày</div>
+              </div>
+
+              <div v-if="checkCsLimitConfig.enabled" style="margin-top:14px; max-width:280px;">
+                <input class="fi" aria-label="Tìm CS check limit" placeholder="Tìm theo username..." v-model="checkCsLimitSearch" />
+              </div>
+
+              <div v-if="checkCsLimitConfig.enabled" style="margin-top:10px; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                <table class="dt">
+                  <thead>
+                    <tr>
+                      <th style="min-width:180px;">CS</th>
+                      <th style="min-width:140px;">Username</th>
+                      <th style="width:130px;">Limit riêng</th>
+                      <th style="min-width:170px;">Đã dùng hôm nay</th>
+                      <th style="width:90px; text-align:center;">Còn lại</th>
+                      <th style="width:120px; text-align:center;">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="cs in filteredCheckCsOverrides" :key="cs.id">
+                      <td style="vertical-align:middle;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div :style="{ width:'30px', height:'30px', borderRadius:'50%', background: csAvatarColor(cs.id), color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'11px', fontWeight:'700' }">
+                            {{ csInitials(cs.name) }}
+                          </div>
+                          <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ cs.name }}</div>
+                        </div>
+                      </td>
+                      <td style="vertical-align:middle; font-size:12.5px; color:#374151;" class="mono">{{ cs.username }}</td>
+                      <td style="vertical-align:middle;">
+                        <input class="fi" type="number" min="0" aria-label="Limit riêng check" placeholder="Dùng mặc định" v-model.number="cs.limit" style="width:110px;" />
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div style="flex:1; height:6px; border-radius:3px; background:#f1f5f9; overflow:hidden;">
+                            <div :style="{ width: checkCsUsedPct(cs) + '%', height:'100%', background:'var(--accent)', transition:'width .2s' }"></div>
+                          </div>
+                          <span style="font-size:12px; color:#64748b; min-width:48px;">{{ cs.usedToday }}/{{ checkCsEffectiveLimit(cs) }}</span>
+                        </div>
+                      </td>
+                      <td style="vertical-align:middle; text-align:center; font-weight:700;"
+                          :style="{ color: checkCsRemaining(cs) === 0 ? '#ef4444' : checkCsRemaining(cs) <= checkCsEffectiveLimit(cs) * 0.2 ? '#f97316' : 'var(--text-primary)' }">
+                        {{ checkCsRemaining(cs) }}
+                      </td>
+                      <td style="vertical-align:middle; text-align:center;">
+                        <button class="btn btn-ghost" style="padding:4px 10px; font-size:12px;" @click="resetCheckCsUsed(cs)">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                          Reset
+                        </button>
+                      </td>
+                    </tr>
+                    <tr v-if="!filteredCheckCsOverrides.length">
+                      <td colspan="6" style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Không tìm thấy CS nào</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Giới hạn số TKQC mỗi lần check -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Giới hạn số TKQC mỗi lần check</div>
+              <div style="font-size:12px; color:#64748b; margin-top:2px;">Áp dụng cho tất cả CS, giới hạn số TKQC tối đa trong 1 lần gọi lệnh</div>
+            </div>
+            <div style="padding:14px 18px;">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                <span style="font-size:12.5px; color:#64748b; font-weight:500;">Số TKQC tối đa mỗi lần check:</span>
+                <input class="fi" type="number" min="0" aria-label="Số TKQC tối đa mỗi lần check" placeholder="Bỏ trống = không giới hạn" v-model.number="checkMaxTkqcPerRequest" style="width:160px;" />
+                <span v-if="!checkMaxTkqcPerRequest" style="font-size:12px; color:#94a3b8; font-style:italic;">Hiện không giới hạn</span>
+              </div>
+              <div style="padding:10px 12px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; font-size:12.5px; color:#475569; line-height:1.6;">
+                Nếu CS nhập số TKQC vượt quá giới hạn, bot thông báo:
+                <div class="mono" style="margin-top:6px; padding:8px 10px; background:#fff; border:1px dashed #cbd5e1; border-radius:6px; color:#0f172a; font-size:12px;">
+                  Exceeded maximum TKQC check limit per request ({{ checkMaxTkqcPerRequest || 'N' }} accounts). Please split into multiple requests.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Gợi ý hành động theo trạng thái -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Gợi ý hành động theo trạng thái TKQC</div>
+            </div>
+            <div style="padding:14px 18px;">
+              <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:14px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <span @click="checkSuggestionConfig.enabled = !checkSuggestionConfig.enabled"
+                        :style="{ width:'36px', height:'20px', borderRadius:'10px', background: checkSuggestionConfig.enabled ? 'var(--accent)' : '#cbd5e1', position:'relative', transition:'background .15s', flexShrink:0 }">
+                    <span :style="{ position:'absolute', top:'2px', left: checkSuggestionConfig.enabled ? '18px' : '2px', width:'16px', height:'16px', borderRadius:'50%', background:'#fff', transition:'left .15s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)' }"></span>
+                  </span>
+                  <span style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ checkSuggestionConfig.enabled ? 'Đang bật' : 'Đã tắt' }}</span>
+                </label>
+                <div style="font-size:12px; color:#64748b;">Khi bật, bot tự động gợi ý hành động tiếp theo sau khi check xong</div>
+              </div>
+
+              <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                <table class="dt">
+                  <thead>
+                    <tr>
+                      <th style="min-width:170px;">Status</th>
+                      <th style="width:100px; text-align:center;">Bật/Tắt</th>
+                      <th style="min-width:340px;">Nội dung gợi ý</th>
+                      <th style="min-width:170px;">Lệnh gợi ý</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="rule in checkSuggestionConfig.rules" :key="rule.status"
+                        :style="{ opacity: checkSuggestionConfig.enabled ? 1 : 0.5 }">
+                      <td style="vertical-align:middle;">
+                        <span :class="['badge', checkStatusBadgeClass(rule.status)]">{{ rule.status }}</span>
+                      </td>
+                      <td style="vertical-align:middle; text-align:center;">
+                        <label style="display:inline-flex; align-items:center; cursor:pointer;" :style="{ cursor: checkSuggestionConfig.enabled ? 'pointer' : 'not-allowed' }">
+                          <span @click="checkSuggestionConfig.enabled && (rule.active = !rule.active)"
+                                :style="{ width:'30px', height:'17px', borderRadius:'9px', background: rule.active ? 'var(--accent)' : '#cbd5e1', position:'relative', transition:'background .15s', flexShrink:0, opacity: checkSuggestionConfig.enabled ? 1 : 0.6 }">
+                            <span :style="{ position:'absolute', top:'2px', left: rule.active ? '15px' : '2px', width:'13px', height:'13px', borderRadius:'50%', background:'#fff', transition:'left .15s', boxShadow:'0 1px 2px rgba(0,0,0,0.2)' }"></span>
+                          </span>
+                        </label>
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <input class="fi" :disabled="!checkSuggestionConfig.enabled" v-model="rule.message" placeholder="Nội dung gợi ý..." />
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <select class="fs" :disabled="!checkSuggestionConfig.enabled" aria-label="Lệnh gợi ý" v-model="rule.command">
+                          <option value="">— (không gợi ý)</option>
+                          <option value="/sharetkqc">/sharetkqc</option>
+                          <option value="/revoketkqc">/revoketkqc</option>
+                          <option value="/replacetkqc">/replacetkqc</option>
+                          <option value="Liên hệ admin xử lí">Liên hệ admin xử lí</option>
+                        </select>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save bar chung -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <div style="font-size:12.5px; color:#64748b;">Lưu cấu hình áp dụng cho cả 3 mục: limit CS, giới hạn TKQC/lần và gợi ý hành động.</div>
+            <button class="btn btn-green" @click="saveAllCheckConfig">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Lưu cấu hình
+            </button>
+          </div>
+
+          <!-- Section 4: Audit Log -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Lịch sử Check TKQC</div>
+              <span style="padding:2px 10px; border-radius:20px; font-size:11.5px; font-weight:600; background:#eff6ff; color:var(--accent);">{{ filteredCheckAuditLogs.length }} / {{ checkAuditLogs.length }}</span>
+            </div>
+
+            <div style="padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap;">
+              <div style="min-width:200px; max-width:280px; flex:1;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Tìm kiếm</div>
+                <input class="fi" placeholder="Tìm username, group..." v-model="checkAuditSearch" />
+              </div>
+              <div style="min-width:130px;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Trạng thái</div>
+                <select class="fs" aria-label="Lọc trạng thái check" v-model="checkAuditFilterStatus">
+                  <option value="all">Tất cả</option>
+                  <option value="success">Success</option>
+                  <option value="failed">Failed</option>
+                  <option value="partial">Partial</option>
+                </select>
+              </div>
+              <div style="min-width:140px;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Từ ngày</div>
+                <input class="fi" type="date" aria-label="Từ ngày check" v-model="checkAuditFilterFrom" />
+              </div>
+              <div style="min-width:140px;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Đến ngày</div>
+                <input class="fi" type="date" aria-label="Đến ngày check" v-model="checkAuditFilterTo" />
+              </div>
+              <button class="btn btn-ghost" @click="exportCheckAuditCsv">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Xuất CSV
+              </button>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="dt">
+                <thead>
+                  <tr>
+                    <th style="width:40px; text-align:center;">#</th>
+                    <th style="min-width:150px;">Thời gian</th>
+                    <th style="min-width:130px;">Username</th>
+                    <th style="min-width:150px;">Group</th>
+                    <th style="width:110px; text-align:center;">Số TKQC check</th>
+                    <th style="min-width:280px;">Tham số tóm tắt</th>
+                    <th style="min-width:100px;">Trạng thái</th>
+                    <th style="min-width:200px;">Kết quả</th>
+                    <th style="width:70px; text-align:center;">Chi tiết</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(log, idx) in filteredCheckAuditLogs" :key="log.id">
+                    <td style="text-align:center; vertical-align:middle; color:#94a3b8;">{{ idx + 1 }}</td>
+                    <td style="vertical-align:middle; color:#374151; font-size:12.5px;" class="mono">{{ log.time }}</td>
+                    <td style="vertical-align:middle; font-weight:600; color:var(--text-primary); font-size:12.5px;">{{ log.username }}</td>
+                    <td style="vertical-align:middle; font-size:12.5px; color:#374151;">{{ log.group }}</td>
+                    <td style="vertical-align:middle; text-align:center; font-weight:600;" class="mono">
+                      <span :style="{ color: log.tkqcFound === log.tkqcRequested ? '#16a34a' : log.tkqcFound === 0 ? '#ef4444' : '#f97316' }">
+                        {{ log.tkqcFound }}/{{ log.tkqcRequested }}
+                      </span>
+                    </td>
+                    <td style="vertical-align:middle; color:#64748b; font-size:12px;">{{ log.paramSummary }}</td>
+                    <td style="vertical-align:middle;">
+                      <span :class="['badge', checkStatusClass(log.status)]">{{ checkStatusLabel(log.status) }}</span>
+                    </td>
+                    <td style="vertical-align:middle; font-size:12.5px; color:#374151;">{{ log.resultSummary }}</td>
+                    <td style="vertical-align:middle; text-align:center;">
+                      <button class="ab" aria-label="Xem chi tiết check" title="Xem chi tiết" style="background:#dbeafe;" @click="openCheckAuditDetail(log)">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="!filteredCheckAuditLogs.length">
+                    <td colspan="9" style="text-align:center; padding:32px; color:#94a3b8; font-size:13px;">Không có log nào khớp bộ lọc</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Modal: Chi tiết check audit log -->
+          <div v-if="checkAuditDetail"
+               style="position:fixed; inset:0; background:rgba(15,23,42,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;"
+               @click.self="checkAuditDetail = null">
+            <div style="background:#fff; width:880px; max-width:96vw; max-height:90vh; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,0.25); display:flex; flex-direction:column; overflow:hidden;">
+              <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <span class="mono" style="padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600; background:#eff6ff; color:var(--accent);">{{ checkAuditDetail.command }}</span>
+                  <span class="mono" style="font-size:12.5px; color:#64748b;">{{ checkAuditDetail.time }}</span>
+                </div>
+                <button @click="checkAuditDetail = null" aria-label="Đóng" style="background:none; border:none; cursor:pointer; color:#64748b; padding:4px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div style="padding:16px 18px; overflow-y:auto;">
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:14px;">
+                  <div style="padding:10px 12px; background:#f8fafc; border-radius:8px;">
+                    <div style="font-size:10.5px; color:#94a3b8; font-weight:600; margin-bottom:3px;">USERNAME</div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ checkAuditDetail.username }}</div>
+                  </div>
+                  <div style="padding:10px 12px; background:#f8fafc; border-radius:8px;">
+                    <div style="font-size:10.5px; color:#94a3b8; font-weight:600; margin-bottom:3px;">GROUP</div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ checkAuditDetail.group }}</div>
+                  </div>
+                  <div style="padding:10px 12px; background:#f8fafc; border-radius:8px;">
+                    <div style="font-size:10.5px; color:#94a3b8; font-weight:600; margin-bottom:3px;">SỐ LẦN CHECK HÔM NAY</div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);" class="mono">{{ checkAuditDetail.usedCountSnapshot || '—' }}</div>
+                  </div>
+                </div>
+
+                <div style="margin-bottom:14px;">
+                  <div style="font-size:11.5px; color:#94a3b8; font-weight:600; margin-bottom:4px;">INPUT ĐẦY ĐỦ</div>
+                  <div class="mono" style="padding:10px 12px; background:#0f172a; color:#e2e8f0; border-radius:8px; font-size:12px; line-height:1.6; white-space:pre-wrap; word-break:break-all;">{{ checkAuditDetail.command }} {{ checkAuditDetail.paramSummary }}</div>
+                </div>
+
+                <div>
+                  <div style="font-size:11.5px; color:#94a3b8; font-weight:600; margin-bottom:6px;">KẾT QUẢ TỪNG TKQC</div>
+                  <div v-if="checkAuditDetail.items && checkAuditDetail.items.length" style="border:1px solid var(--border); border-radius:8px; overflow-x:auto;">
+                    <table class="dt" style="min-width:1100px;">
+                      <thead>
+                        <tr>
+                          <th style="min-width:110px;">TKQC ID</th>
+                          <th style="min-width:170px;">Tên</th>
+                          <th style="min-width:140px;">Status FB</th>
+                          <th style="min-width:200px;">Lý do disable</th>
+                          <th style="min-width:120px;">Tổng chi tiêu</th>
+                          <th style="width:80px;">Currency</th>
+                          <th style="min-width:230px;">Gợi ý lúc check</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(it, i) in checkAuditDetail.items" :key="i">
+                          <td class="mono" style="vertical-align:middle; color:#3b82f6; font-size:11.5px; font-weight:500;">{{ it.tkqcId }}</td>
+                          <td style="vertical-align:middle; font-size:12.5px;">{{ it.name }}</td>
+                          <td style="vertical-align:middle;">
+                            <span :class="['badge', checkStatusBadgeClass(it.fbStatus)]">{{ it.fbStatus }}</span>
+                          </td>
+                          <td style="vertical-align:middle; font-size:12px; color:#ef4444;">{{ it.disableReason || '—' }}</td>
+                          <td style="vertical-align:middle; font-size:12.5px; font-weight:600;" class="mono">{{ it.spent != null ? it.spent.toLocaleString() : '—' }}</td>
+                          <td style="vertical-align:middle; font-size:12.5px; font-weight:500;">{{ it.currency || '—' }}</td>
+                          <td style="vertical-align:middle; font-size:12px; color:#475569;">{{ it.suggestion || '—' }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div v-else style="padding:20px; text-align:center; color:#94a3b8; font-size:13px; border:1px solid var(--border); border-radius:8px;">Không có TKQC nào được check.</div>
+                </div>
+              </div>
+              <div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:#f8fafc;">
+                <div style="font-size:12.5px; color:#64748b;">
+                  Tổng <strong style="color:var(--text-primary);">{{ checkAuditDetail.tkqcFound }}/{{ checkAuditDetail.tkqcRequested }}</strong> TKQC tìm thấy
+                </div>
+                <button class="btn btn-green" @click="checkAuditDetail = null">Đóng</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- ══ MODULE: SCAN BM ══ -->
         <div v-if="activeModule === 'scanbm'" class="fade-in">
 
@@ -2988,11 +3322,6 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
                 <div style="min-width:240px; max-width:320px; flex:1;">
                   <input class="fi" aria-label="Tìm CS phân quyền asset" placeholder="Tìm username..." v-model="scanAssetPermSearch" />
                 </div>
-                <div style="flex:1;"></div>
-                <button class="btn btn-green" @click="openAddScanAssetCs">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Thêm CS
-                </button>
               </div>
               <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
                 <table class="dt">
@@ -3115,12 +3444,6 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
                     </tr>
                   </tbody>
                 </table>
-                <div style="padding:10px 14px; border-top:1px solid var(--border); background:#fafafa;">
-                  <button class="btn btn-ghost" style="font-size:12.5px;" @click="addScanCsOverride">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Thêm CS
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -4113,6 +4436,86 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
             ],
           },
         ],
+        // /checktkqc — Limit theo CS
+        checkCsLimitSearch: '',
+        checkCsLimitConfig: {
+          enabled: true,
+          defaultLimit: 15,
+          resetTime: '00:00 UTC+7',
+          overrides: [
+            { id:1, name:'Nguyễn CS Minh', username:'@cs_minh', limit: 30,   usedToday: 28 },
+            { id:2, name:'Trần CS Lan',    username:'@cs_lan',  limit: null, usedToday: 4  },
+            { id:3, name:'Lê CS Hùng',     username:'@cs_hung', limit: 50,   usedToday: 50 },
+          ],
+        },
+        // /checktkqc — Giới hạn số TKQC mỗi lần check
+        checkMaxTkqcPerRequest: 20,
+        // /checktkqc — Gợi ý hành động
+        checkSuggestionConfig: {
+          enabled: true,
+          rules: [
+            { status:'DISABLED',            active:true,  message:'Tài khoản bị vô hiệu hoá. Cân nhắc thay thế hoặc kháng nghị.', command:'/replacetkqc' },
+            { status:'PAYMENT_ERROR',       active:true,  message:'Tài khoản lỗi thanh toán. Cần xử lý payment trước khi chạy ads.', command:'/fixpayment' },
+            { status:'UNSETTLED',           active:true,  message:'Tài khoản có công nợ chưa thanh toán.', command:'/fixpayment' },
+            { status:'IN_GRACE_PERIOD',     active:false, message:'Tài khoản đang trong thời gian gia hạn. Cần theo dõi.', command:'' },
+            { status:'PENDING_RISK_REVIEW', active:false, message:'Tài khoản đang chờ Facebook xem xét rủi ro.', command:'' },
+            { status:'ACTIVE',              active:false, message:'Tài khoản đang hoạt động bình thường.', command:'' },
+          ],
+        },
+        // /checktkqc — Audit log
+        checkAuditSearch: '',
+        checkAuditFilterStatus: 'all',
+        checkAuditFilterFrom: '',
+        checkAuditFilterTo: '',
+        checkAuditDetail: null,
+        checkAuditLogs: [
+          {
+            id:1,
+            time:'2026-04-24 09:10:05',
+            username:'@cs_minh',
+            group:'Group KH Alpha',
+            command:'/checktkqc',
+            tkqcRequested:3, tkqcFound:3,
+            paramSummary:'act_111, act_222, act_333',
+            status:'success',
+            resultSummary:'3/3 tìm thấy',
+            usedCountSnapshot:'5/30',
+            items:[
+              { tkqcId:'act_111', name:'RMFA US-RM TEST 1', fbStatus:'ACTIVE',         disableReason:'',                          spent:1500, currency:'USD', suggestion:'' },
+              { tkqcId:'act_222', name:'RMFA US-RM TEST 2', fbStatus:'DISABLED',       disableReason:'Vi phạm chính sách QC',     spent:800,  currency:'USD', suggestion:'Cân nhắc thay thế — /replacetkqc' },
+              { tkqcId:'act_333', name:'RMFA VN-RM TEST 3', fbStatus:'PAYMENT_ERROR',  disableReason:'Lỗi phương thức thanh toán', spent:200,  currency:'VND', suggestion:'Cần xử lý payment — /fixpayment' },
+            ],
+          },
+          {
+            id:2,
+            time:'2026-04-24 10:35:18',
+            username:'@cs_lan',
+            group:'Group KH Beta',
+            command:'/checktkqc',
+            tkqcRequested:2, tkqcFound:1,
+            paramSummary:'act_444, act_999',
+            status:'partial',
+            resultSummary:'1/2 tìm thấy — act_999 không tồn tại',
+            usedCountSnapshot:'4/15',
+            items:[
+              { tkqcId:'act_444', name:'RMFA EU-RM TEST 4', fbStatus:'ACTIVE', disableReason:'', spent:3200, currency:'EUR', suggestion:'' },
+              { tkqcId:'act_999', name:'—',                 fbStatus:'NOT_FOUND', disableReason:'', spent:0, currency:'—', suggestion:'' },
+            ],
+          },
+          {
+            id:3,
+            time:'2026-04-24 13:50:44',
+            username:'@cs_hung',
+            group:'Group KH Gamma',
+            command:'/checktkqc',
+            tkqcRequested:5, tkqcFound:0,
+            paramSummary:'act_aaa, act_bbb, act_ccc, act_ddd, act_eee',
+            status:'failed',
+            resultSummary:'Đã đạt limit số lần check hôm nay',
+            usedCountSnapshot:'50/50',
+            items:[],
+          },
+        ],
         // /sharetkqc — Limit Simulator
         simulator: {
           open: false,
@@ -4457,6 +4860,27 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
         if (!q) return this.csLimitConfig.overrides;
         return this.csLimitConfig.overrides.filter(cs =>
           (cs.username || '').toLowerCase().includes(q));
+      },
+      // /checktkqc — computed
+      filteredCheckCsOverrides() {
+        const q = (this.checkCsLimitSearch || '').trim().toLowerCase();
+        if (!q) return this.checkCsLimitConfig.overrides;
+        return this.checkCsLimitConfig.overrides.filter(cs =>
+          (cs.username || '').toLowerCase().includes(q));
+      },
+      filteredCheckAuditLogs() {
+        const q = (this.checkAuditSearch || '').trim().toLowerCase();
+        return this.checkAuditLogs.filter(log => {
+          if (q) {
+            const hay = (log.username + ' ' + log.group).toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          if (this.checkAuditFilterStatus !== 'all' && log.status !== this.checkAuditFilterStatus) return false;
+          const day = log.time.slice(0, 10);
+          if (this.checkAuditFilterFrom && day < this.checkAuditFilterFrom) return false;
+          if (this.checkAuditFilterTo && day > this.checkAuditFilterTo) return false;
+          return true;
+        });
       },
       // /scanbm — computed
       filteredScanWhitelist() {
@@ -4987,6 +5411,60 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
         a.click();
         URL.revokeObjectURL(a.href);
       },
+      // /checktkqc — CS limit helpers
+      checkCsEffectiveLimit(cs) {
+        const v = cs.limit == null || cs.limit === '' ? this.checkCsLimitConfig.defaultLimit : cs.limit;
+        return Number(v) || 0;
+      },
+      checkCsUsedPct(cs) {
+        const lim = this.checkCsEffectiveLimit(cs);
+        if (!lim) return 0;
+        return Math.min(100, Math.round((cs.usedToday / lim) * 100));
+      },
+      checkCsRemaining(cs) {
+        return Math.max(0, this.checkCsEffectiveLimit(cs) - cs.usedToday);
+      },
+      resetCheckCsUsed(cs) { cs.usedToday = 0; },
+      checkStatusBadgeClass(s) {
+        return ({
+          DISABLED:'bg-red',
+          PAYMENT_ERROR:'bg-amber',
+          UNSETTLED:'bg-amber',
+          IN_GRACE_PERIOD:'bg-amber',
+          PENDING_RISK_REVIEW:'bg-purple',
+          ACTIVE:'bg-green',
+          NOT_FOUND:'bg-gray',
+        })[s] || 'bg-gray';
+      },
+      checkStatusClass(s) {
+        return s === 'success' ? 'bg-green' : s === 'failed' ? 'bg-red' : 'bg-amber';
+      },
+      checkStatusLabel(s) {
+        return s === 'success' ? 'Success' : s === 'failed' ? 'Failed' : 'Partial';
+      },
+      openCheckAuditDetail(log) { this.checkAuditDetail = log; },
+      saveAllCheckConfig() {
+        const activeRules = this.checkSuggestionConfig.rules.filter(r => r.active).length;
+        alert(
+          'Đã lưu cấu hình check TKQC:\n' +
+          `• Limit CS: ${this.checkCsLimitConfig.enabled ? `bật (mặc định ${this.checkCsLimitConfig.defaultLimit} lần/ngày)` : 'tắt'}\n` +
+          `• Số TKQC tối đa/lần: ${this.checkMaxTkqcPerRequest || 'không giới hạn'}\n` +
+          `• Gợi ý hành động: ${this.checkSuggestionConfig.enabled ? `bật (${activeRules}/${this.checkSuggestionConfig.rules.length} status)` : 'tắt'}`
+        );
+      },
+      exportCheckAuditCsv() {
+        const rows = [['Thời gian','Username','Group','Lệnh','TKQC yêu cầu','TKQC tìm thấy','Tham số','Trạng thái','Kết quả']];
+        this.filteredCheckAuditLogs.forEach(l => {
+          rows.push([l.time, l.username, l.group, l.command, l.tkqcRequested, l.tkqcFound, l.paramSummary, l.status, l.resultSummary]);
+        });
+        const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `check-audit-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      },
       // /scanbm — Whitelist
       openAddScanBm() {
         this.scanWhitelistDraft = { bmId:'', name:'' };
@@ -5036,16 +5514,6 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
         }
         this.scanAssetModal.open = false;
       },
-      openAddScanAssetCs() {
-        const username = prompt('Username Telegram (vd: @cs_xyz):');
-        if (!username) return;
-        const name = prompt('Tên CS:') || username;
-        const newId = this.scanAssetPermissions.reduce((m, x) => Math.max(m, x.id), 0) + 1;
-        this.scanAssetPermissions.push({
-          id:newId, name:name.trim(), username:username.trim(),
-          assets:['TKQC','Fanpage'],
-        });
-      },
       // /scanbm — CS limit helpers
       scanCsEffectiveLimit(cs) {
         const v = cs.limit == null || cs.limit === '' ? this.scanCsLimitConfig.defaultLimit : cs.limit;
@@ -5060,15 +5528,6 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
         return Math.max(0, this.scanCsEffectiveLimit(cs) - cs.usedToday);
       },
       resetScanCsUsed(cs) { cs.usedToday = 0; },
-      addScanCsOverride() {
-        const username = prompt('Username Telegram (vd: @cs_xyz):');
-        if (!username) return;
-        const name = prompt('Tên CS:') || username;
-        const newId = this.scanCsLimitConfig.overrides.reduce((m, x) => Math.max(m, x.id), 0) + 1;
-        this.scanCsLimitConfig.overrides.push({
-          id:newId, name:name.trim(), username:username.trim(), limit:null, usedToday:0,
-        });
-      },
       // /scanbm — Save all
       saveAllScanConfig() {
         const wl = this.scanBmWhitelist.length;
