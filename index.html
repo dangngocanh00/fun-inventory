@@ -1936,7 +1936,7 @@
         </div>
 
         <!-- ══ MODULE: LỆNH BOT (shared placeholder) ══ -->
-        <div v-if="activeLenhBot && activeModule !== 'sharetkqc' && activeModule !== 'revoketkqc'" class="fade-in">
+        <div v-if="activeLenhBot && activeModule !== 'sharetkqc' && activeModule !== 'revoketkqc' && activeModule !== 'scanbm'" class="fade-in">
           <div style="background:white; border-radius:12px; border:1px solid var(--border); padding:32px; box-shadow:0 1px 4px rgba(0,0,0,0.05);">
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
               <div style="font-size:18px; font-weight:700; color:var(--text-primary);">{{ activeLenhBot.label }}</div>
@@ -2894,6 +2894,480 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
           </div>
         </div>
 
+        <!-- ══ MODULE: SCAN BM ══ -->
+        <div v-if="activeModule === 'scanbm'" class="fade-in">
+
+          <!-- Section 1: Whitelist BM -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Whitelist BM được phép scan</div>
+                <span class="mono" style="padding:3px 10px; border-radius:6px; font-size:12px; font-weight:500; background:#eff6ff; color:var(--accent);">/scanbm</span>
+              </div>
+              <div style="font-size:12px; color:#64748b; margin-top:2px;">CS chỉ được scan các BM nằm trong danh sách này</div>
+            </div>
+            <div style="padding:14px 18px;">
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+                <div style="min-width:240px; max-width:340px; flex:1;">
+                  <input class="fi" aria-label="Tìm BM whitelist" placeholder="Tìm BM ID hoặc tên BM..." v-model="scanWhitelistSearch" />
+                </div>
+                <div style="flex:1;"></div>
+                <button class="btn btn-green" @click="openAddScanBm">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Thêm BM
+                </button>
+              </div>
+              <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                <table class="dt">
+                  <thead>
+                    <tr>
+                      <th style="width:50px; text-align:center;">STT</th>
+                      <th style="min-width:170px;">BM ID</th>
+                      <th style="min-width:200px;">Tên BM</th>
+                      <th style="width:130px;">Trạng thái</th>
+                      <th style="width:160px;">Thêm vào</th>
+                      <th style="width:100px; text-align:center;">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-if="scanWhitelistAddOpen" style="background:#eff6ff;">
+                      <td style="text-align:center; color:#94a3b8; vertical-align:middle;">+</td>
+                      <td style="vertical-align:middle;"><input class="fi" placeholder="Nhập BM ID..." v-model="scanWhitelistDraft.bmId" /></td>
+                      <td style="vertical-align:middle;"><input class="fi" placeholder="Nhập tên BM..." v-model="scanWhitelistDraft.name" /></td>
+                      <td style="vertical-align:middle;" colspan="2">
+                        <span style="font-size:12px; color:#64748b; font-style:italic;">Mặc định Active</span>
+                      </td>
+                      <td style="vertical-align:middle; text-align:center;">
+                        <div style="display:flex; gap:4px; justify-content:center;">
+                          <button class="btn btn-green" style="padding:4px 10px; font-size:12px;" @click="saveScanBmDraft">Lưu</button>
+                          <button class="btn btn-ghost" style="padding:4px 10px; font-size:12px;" @click="scanWhitelistAddOpen=false">Huỷ</button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr v-for="(bm, idx) in filteredScanWhitelist" :key="bm.id" :style="{ opacity: bm.active ? 1 : 0.5 }">
+                      <td style="text-align:center; color:#94a3b8; vertical-align:middle;">{{ idx + 1 }}</td>
+                      <td style="vertical-align:middle;"><span class="mono" style="font-size:12px; color:#3b82f6; font-weight:500;">{{ bm.bmId }}</span></td>
+                      <td style="vertical-align:middle; font-size:13px; font-weight:600; color:var(--text-primary);">{{ bm.name }}</td>
+                      <td style="vertical-align:middle;">
+                        <button @click="bm.active = !bm.active"
+                                :class="['badge', bm.active ? 'bg-green' : 'bg-gray']"
+                                style="border:none; cursor:pointer;">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                          {{ bm.active ? 'Active' : 'Inactive' }}
+                        </button>
+                      </td>
+                      <td style="vertical-align:middle; color:#64748b; font-size:12.5px;" class="mono">{{ bm.addedAt }}</td>
+                      <td style="vertical-align:middle; text-align:center;">
+                        <button class="ab" title="Xóa" style="background:#fef2f2; border:1px solid #fecaca;" @click="deleteScanBm(bm)">
+                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr v-if="!filteredScanWhitelist.length && !scanWhitelistAddOpen">
+                      <td colspan="6" style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Không tìm thấy BM nào</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Loại tài sản được phép scan -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Phân quyền tài sản scan theo CS</div>
+            </div>
+            <div style="padding:14px 18px;">
+              <div style="display:flex; gap:10px; padding:10px 12px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; margin-bottom:12px;">
+                <span style="font-size:16px; line-height:1;">ℹ️</span>
+                <div style="font-size:12.5px; color:#1e3a8a; line-height:1.6;">
+                  Mặc định CS chưa được cấu hình chỉ được scan <strong>TKQC + Fanpage</strong>.
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
+                <div style="min-width:240px; max-width:320px; flex:1;">
+                  <input class="fi" aria-label="Tìm CS phân quyền asset" placeholder="Tìm username..." v-model="scanAssetPermSearch" />
+                </div>
+                <div style="flex:1;"></div>
+                <button class="btn btn-green" @click="openAddScanAssetCs">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Thêm CS
+                </button>
+              </div>
+              <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                <table class="dt">
+                  <thead>
+                    <tr>
+                      <th style="min-width:200px;">CS</th>
+                      <th style="min-width:140px;">Username</th>
+                      <th style="min-width:340px;">Tài sản được phép scan</th>
+                      <th style="width:130px; text-align:center;">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="cs in filteredScanAssetPermissions" :key="cs.id">
+                      <td style="vertical-align:middle;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                          <div :style="{ width:'32px', height:'32px', borderRadius:'50%', background: csAvatarColor(cs.id), color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'11px', fontWeight:'700' }">
+                            {{ csInitials(cs.name) }}
+                          </div>
+                          <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ cs.name }}</div>
+                        </div>
+                      </td>
+                      <td style="vertical-align:middle; font-size:12.5px; color:#374151;" class="mono">{{ cs.username }}</td>
+                      <td style="vertical-align:middle;">
+                        <div v-if="cs.assets.length" style="display:flex; flex-wrap:wrap; gap:4px;">
+                          <span v-for="a in cs.assets" :key="a"
+                                :class="['badge', scanAssetBadgeClass(a)]"
+                                style="font-size:11px;">{{ a }}</span>
+                        </div>
+                        <span v-else style="color:#cbd5e1; font-size:12px;">— Chưa cấp quyền —</span>
+                      </td>
+                      <td style="vertical-align:middle; text-align:center;">
+                        <button class="btn btn-ghost" style="padding:4px 10px; font-size:12px;" @click="openScanAssetModal(cs)">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          Chỉnh sửa
+                        </button>
+                      </td>
+                    </tr>
+                    <tr v-if="!filteredScanAssetPermissions.length">
+                      <td colspan="4" style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Không tìm thấy CS nào</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Limit theo CS -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Limit số lần scan theo CS</div>
+              <div style="font-size:12px; color:#64748b; margin-top:2px;">Số lần tối đa mỗi CS có thể gọi /scanbm trong 1 ngày</div>
+            </div>
+            <div style="padding:14px 18px;">
+              <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <span @click="scanCsLimitConfig.enabled = !scanCsLimitConfig.enabled"
+                        :style="{ width:'36px', height:'20px', borderRadius:'10px', background: scanCsLimitConfig.enabled ? 'var(--accent)' : '#cbd5e1', position:'relative', transition:'background .15s', flexShrink:0 }">
+                    <span :style="{ position:'absolute', top:'2px', left: scanCsLimitConfig.enabled ? '18px' : '2px', width:'16px', height:'16px', borderRadius:'50%', background:'#fff', transition:'left .15s', boxShadow:'0 1px 3px rgba(0,0,0,0.2)' }"></span>
+                  </span>
+                  <span style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ scanCsLimitConfig.enabled ? 'Đang bật' : 'Đã tắt (không giới hạn)' }}</span>
+                </label>
+                <div v-if="scanCsLimitConfig.enabled" style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:12.5px; color:#64748b;">Limit mặc định (lần/ngày):</span>
+                  <input class="fi" type="number" min="0" aria-label="Limit mặc định scan CS" v-model.number="scanCsLimitConfig.defaultLimit" style="width:90px;" />
+                </div>
+                <div style="font-size:11.5px; color:#94a3b8; font-style:italic;">Reset lúc {{ scanCsLimitConfig.resetTime }} mỗi ngày</div>
+              </div>
+
+              <div v-if="scanCsLimitConfig.enabled" style="margin-top:14px; max-width:280px;">
+                <input class="fi" aria-label="Tìm CS scan limit" placeholder="Tìm theo username..." v-model="scanCsLimitSearch" />
+              </div>
+
+              <div v-if="scanCsLimitConfig.enabled" style="margin-top:10px; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                <table class="dt">
+                  <thead>
+                    <tr>
+                      <th style="min-width:180px;">CS</th>
+                      <th style="min-width:140px;">Username</th>
+                      <th style="width:130px;">Limit riêng</th>
+                      <th style="min-width:170px;">Đã dùng hôm nay</th>
+                      <th style="width:90px; text-align:center;">Còn lại</th>
+                      <th style="width:120px; text-align:center;">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="cs in filteredScanCsOverrides" :key="cs.id">
+                      <td style="vertical-align:middle;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div :style="{ width:'30px', height:'30px', borderRadius:'50%', background: csAvatarColor(cs.id), color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'11px', fontWeight:'700' }">
+                            {{ csInitials(cs.name) }}
+                          </div>
+                          <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ cs.name }}</div>
+                        </div>
+                      </td>
+                      <td style="vertical-align:middle; font-size:12.5px; color:#374151;" class="mono">{{ cs.username }}</td>
+                      <td style="vertical-align:middle;">
+                        <input class="fi" type="number" min="0" aria-label="Limit riêng scan" placeholder="Dùng mặc định" v-model.number="cs.limit" style="width:110px;" />
+                      </td>
+                      <td style="vertical-align:middle;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                          <div style="flex:1; height:6px; border-radius:3px; background:#f1f5f9; overflow:hidden;">
+                            <div :style="{ width: scanCsUsedPct(cs) + '%', height:'100%', background:'var(--accent)', transition:'width .2s' }"></div>
+                          </div>
+                          <span style="font-size:12px; color:#64748b; min-width:48px;">{{ cs.usedToday }}/{{ scanCsEffectiveLimit(cs) }}</span>
+                        </div>
+                      </td>
+                      <td style="vertical-align:middle; text-align:center; font-weight:700;"
+                          :style="{ color: scanCsRemaining(cs) === 0 ? '#ef4444' : scanCsRemaining(cs) <= scanCsEffectiveLimit(cs) * 0.2 ? '#f97316' : 'var(--text-primary)' }">
+                        {{ scanCsRemaining(cs) }}
+                      </td>
+                      <td style="vertical-align:middle; text-align:center;">
+                        <button class="btn btn-ghost" style="padding:4px 10px; font-size:12px;" @click="resetScanCsUsed(cs)">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                          Reset
+                        </button>
+                      </td>
+                    </tr>
+                    <tr v-if="!filteredScanCsOverrides.length">
+                      <td colspan="6" style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Không tìm thấy CS nào</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style="padding:10px 14px; border-top:1px solid var(--border); background:#fafafa;">
+                  <button class="btn btn-ghost" style="font-size:12.5px;" @click="addScanCsOverride">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Thêm CS
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Giới hạn số BM per lần scan -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border);">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Giới hạn số BM mỗi lần scan</div>
+              <div style="font-size:12px; color:#64748b; margin-top:2px;">Áp dụng cho tất cả CS, giới hạn số BM tối đa trong 1 lần gọi lệnh</div>
+            </div>
+            <div style="padding:14px 18px;">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                <span style="font-size:12.5px; color:#64748b; font-weight:500;">Số BM tối đa mỗi lần scan:</span>
+                <input class="fi" type="number" min="0" aria-label="Số BM tối đa mỗi lần scan" placeholder="Bỏ trống = không giới hạn" v-model.number="scanMaxBmPerRequest" style="width:160px;" />
+                <span v-if="!scanMaxBmPerRequest" style="font-size:12px; color:#94a3b8; font-style:italic;">Hiện không giới hạn</span>
+              </div>
+              <div style="padding:10px 12px; background:#f8fafc; border:1px solid var(--border); border-radius:8px; font-size:12.5px; color:#475569; line-height:1.6;">
+                Nếu CS nhập số BM vượt quá giới hạn, bot thông báo:
+                <div class="mono" style="margin-top:6px; padding:8px 10px; background:#fff; border:1px dashed #cbd5e1; border-radius:6px; color:#0f172a; font-size:12px;">
+                  Exceeded maximum BM scan limit per request ({{ scanMaxBmPerRequest || 'N' }} BM). Please split into multiple requests.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save bar chung -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); margin-bottom:16px; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+            <div style="font-size:12.5px; color:#64748b;">Lưu cấu hình áp dụng cho cả 4 mục: whitelist BM, phân quyền asset, limit CS và giới hạn BM/lần.</div>
+            <button class="btn btn-green" @click="saveAllScanConfig">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Lưu cấu hình
+            </button>
+          </div>
+
+          <!-- Section 5: Audit Log -->
+          <div style="background:white; border-radius:12px; border:1px solid var(--border); box-shadow:0 1px 4px rgba(0,0,0,0.05); overflow:hidden;">
+            <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <div style="font-size:15px; font-weight:700; color:var(--text-primary);">Lịch sử Scan BM</div>
+              <span style="padding:2px 10px; border-radius:20px; font-size:11.5px; font-weight:600; background:#eff6ff; color:var(--accent);">{{ filteredScanAuditLogs.length }} / {{ scanAuditLogs.length }}</span>
+            </div>
+
+            <div style="padding:12px 18px; border-bottom:1px solid var(--border); display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap;">
+              <div style="min-width:200px; max-width:280px; flex:1;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Tìm kiếm</div>
+                <input class="fi" placeholder="Tìm username, group..." v-model="scanAuditSearch" />
+              </div>
+              <div style="min-width:130px;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Trạng thái</div>
+                <select class="fs" aria-label="Lọc trạng thái scan" v-model="scanAuditFilterStatus">
+                  <option value="all">Tất cả</option>
+                  <option value="success">Success</option>
+                  <option value="failed">Failed</option>
+                  <option value="partial">Partial</option>
+                </select>
+              </div>
+              <div style="min-width:140px;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Từ ngày</div>
+                <input class="fi" type="date" aria-label="Từ ngày scan" v-model="scanAuditFilterFrom" />
+              </div>
+              <div style="min-width:140px;">
+                <div style="font-size:11px; color:#94a3b8; margin-bottom:3px; font-weight:500;">Đến ngày</div>
+                <input class="fi" type="date" aria-label="Đến ngày scan" v-model="scanAuditFilterTo" />
+              </div>
+              <button class="btn btn-ghost" @click="exportScanAuditCsv">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Xuất CSV
+              </button>
+            </div>
+
+            <div style="overflow-x:auto;">
+              <table class="dt">
+                <thead>
+                  <tr>
+                    <th style="width:40px; text-align:center;">#</th>
+                    <th style="min-width:150px;">Thời gian</th>
+                    <th style="min-width:130px;">Username</th>
+                    <th style="min-width:150px;">Group</th>
+                    <th style="width:100px; text-align:center;">Số BM scan</th>
+                    <th style="min-width:200px;">Loại tài sản</th>
+                    <th style="min-width:280px;">Tham số tóm tắt</th>
+                    <th style="min-width:100px;">Trạng thái</th>
+                    <th style="min-width:200px;">Kết quả</th>
+                    <th style="width:70px; text-align:center;">Chi tiết</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(log, idx) in filteredScanAuditLogs" :key="log.id">
+                    <td style="text-align:center; vertical-align:middle; color:#94a3b8;">{{ idx + 1 }}</td>
+                    <td style="vertical-align:middle; color:#374151; font-size:12.5px;" class="mono">{{ log.time }}</td>
+                    <td style="vertical-align:middle; font-weight:600; color:var(--text-primary); font-size:12.5px;">{{ log.username }}</td>
+                    <td style="vertical-align:middle; font-size:12.5px; color:#374151;">{{ log.group }}</td>
+                    <td style="vertical-align:middle; text-align:center; font-weight:600;" class="mono">
+                      <span :style="{ color: log.bmSuccess === log.bmRequested ? '#16a34a' : log.bmSuccess === 0 ? '#ef4444' : '#f97316' }">
+                        {{ log.bmSuccess }}/{{ log.bmRequested }}
+                      </span>
+                    </td>
+                    <td style="vertical-align:middle;">
+                      <div style="display:flex; flex-wrap:wrap; gap:3px;">
+                        <span v-for="a in log.assets" :key="a"
+                              :class="['badge', scanAssetBadgeClass(a)]"
+                              style="font-size:10.5px;">{{ a }}</span>
+                      </div>
+                    </td>
+                    <td style="vertical-align:middle; color:#64748b; font-size:12px;">{{ log.paramSummary }}</td>
+                    <td style="vertical-align:middle;">
+                      <span :class="['badge', scanStatusClass(log.status)]">{{ scanStatusLabel(log.status) }}</span>
+                    </td>
+                    <td style="vertical-align:middle; font-size:12.5px; color:#374151;">{{ log.resultSummary }}</td>
+                    <td style="vertical-align:middle; text-align:center;">
+                      <button class="ab" aria-label="Xem chi tiết scan" title="Xem chi tiết" style="background:#dbeafe;" @click="openScanAuditDetail(log)">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr v-if="!filteredScanAuditLogs.length">
+                    <td colspan="10" style="text-align:center; padding:32px; color:#94a3b8; font-size:13px;">Không có log nào khớp bộ lọc</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Modal: Cấu hình quyền scan asset -->
+          <div v-if="scanAssetModal.open"
+               style="position:fixed; inset:0; background:rgba(15,23,42,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;"
+               @click.self="closeScanAssetModal">
+            <div style="background:#fff; width:480px; max-width:96vw; max-height:90vh; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,0.25); display:flex; flex-direction:column; overflow:hidden;">
+              <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between;">
+                <div style="font-weight:600; font-size:15px; color:var(--text-primary);">
+                  Cấu hình quyền scan — <span class="mono" style="color:var(--accent);">{{ scanAssetModalUsername }}</span>
+                </div>
+                <button @click="closeScanAssetModal" aria-label="Đóng" style="background:none; border:none; cursor:pointer; color:#64748b; padding:4px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div style="padding:14px 18px; overflow-y:auto;">
+                <label v-for="opt in scanAssetOptions" :key="opt.key"
+                       style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px; cursor:pointer;"
+                       :style="{ background: scanAssetModal.draft.includes(opt.key) ? '#eff6ff' : '#fff' }">
+                  <input type="checkbox" :checked="scanAssetModal.draft.includes(opt.key)"
+                         @change="toggleScanAssetDraft(opt.key, $event.target.checked)"
+                         style="width:16px; height:16px; accent-color:var(--accent); cursor:pointer; margin-top:2px;" />
+                  <div style="flex:1;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <span :class="['badge', scanAssetBadgeClass(opt.key)]" style="font-size:11px;">{{ opt.key }}</span>
+                      <span style="font-size:13px; font-weight:600; color:var(--text-primary);">— {{ opt.label }}</span>
+                    </div>
+                  </div>
+                </label>
+              </div>
+              <div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:8px; justify-content:flex-end; background:#f8fafc;">
+                <button class="btn" style="background:#f1f5f9; color:#475569;" @click="closeScanAssetModal">Huỷ</button>
+                <button class="btn btn-green" @click="saveScanAssetModal">Lưu</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal: Chi tiết scan audit log -->
+          <div v-if="scanAuditDetail"
+               style="position:fixed; inset:0; background:rgba(15,23,42,0.5); display:flex; align-items:center; justify-content:center; z-index:1000; padding:20px;"
+               @click.self="scanAuditDetail = null">
+            <div style="background:#fff; width:760px; max-width:96vw; max-height:90vh; border-radius:12px; box-shadow:0 20px 50px rgba(0,0,0,0.25); display:flex; flex-direction:column; overflow:hidden;">
+              <div style="padding:14px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <span class="mono" style="padding:3px 10px; border-radius:6px; font-size:12px; font-weight:600; background:#eff6ff; color:var(--accent);">{{ scanAuditDetail.command }}</span>
+                  <span class="mono" style="font-size:12.5px; color:#64748b;">{{ scanAuditDetail.time }}</span>
+                </div>
+                <button @click="scanAuditDetail = null" aria-label="Đóng" style="background:none; border:none; cursor:pointer; color:#64748b; padding:4px;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div style="padding:16px 18px; overflow-y:auto;">
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin-bottom:14px;">
+                  <div style="padding:10px 12px; background:#f8fafc; border-radius:8px;">
+                    <div style="font-size:10.5px; color:#94a3b8; font-weight:600; margin-bottom:3px;">USERNAME</div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ scanAuditDetail.username }}</div>
+                  </div>
+                  <div style="padding:10px 12px; background:#f8fafc; border-radius:8px;">
+                    <div style="font-size:10.5px; color:#94a3b8; font-weight:600; margin-bottom:3px;">GROUP</div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);">{{ scanAuditDetail.group }}</div>
+                  </div>
+                  <div style="padding:10px 12px; background:#f8fafc; border-radius:8px;">
+                    <div style="font-size:10.5px; color:#94a3b8; font-weight:600; margin-bottom:3px;">SỐ LẦN SCAN HÔM NAY</div>
+                    <div style="font-size:13px; font-weight:600; color:var(--text-primary);" class="mono">{{ scanAuditDetail.usedCountSnapshot || '—' }}</div>
+                  </div>
+                </div>
+
+                <div style="margin-bottom:14px;">
+                  <div style="font-size:11.5px; color:#94a3b8; font-weight:600; margin-bottom:4px;">INPUT ĐẦY ĐỦ</div>
+                  <div class="mono" style="padding:10px 12px; background:#0f172a; color:#e2e8f0; border-radius:8px; font-size:12px; line-height:1.6; white-space:pre-wrap; word-break:break-all;">{{ scanAuditDetail.command }} {{ scanAuditDetail.paramSummary }}</div>
+                </div>
+
+                <div>
+                  <div style="font-size:11.5px; color:#94a3b8; font-weight:600; margin-bottom:6px;">CHI TIẾT TỪNG BM</div>
+                  <div style="display:flex; flex-direction:column; gap:8px;">
+                    <div v-for="(bm, bi) in scanAuditDetail.bms" :key="bi" style="border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                      <div @click="toggleScanAuditBm(bi)"
+                           style="padding:10px 12px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; background:#f8fafc;">
+                        <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+                          <svg :style="{ transform: scanAuditBmExpanded[bi] ? 'rotate(180deg)' : '', transition:'transform .15s', flexShrink:0 }" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                          <span class="mono" style="color:#3b82f6; font-size:12px; font-weight:600;">{{ bm.bmId }}</span>
+                          <span style="font-size:12.5px; color:var(--text-primary); font-weight:600;">— {{ bm.name }}</span>
+                        </div>
+                        <span :class="['badge', scanStatusClass(bm.status)]">{{ scanStatusLabel(bm.status) }}</span>
+                      </div>
+                      <div v-show="scanAuditBmExpanded[bi]" style="padding:10px 12px; border-top:1px solid var(--border);">
+                        <div v-if="bm.error" style="margin-bottom:8px; padding:8px 10px; background:#fee2e2; color:#991b1b; border-radius:6px; font-size:12px;">
+                          {{ bm.error }}
+                        </div>
+                        <div v-if="bm.items && bm.items.length" style="border:1px solid var(--border); border-radius:6px; overflow:hidden;">
+                          <table class="dt">
+                            <thead>
+                              <tr>
+                                <th style="width:90px;">Loại</th>
+                                <th style="min-width:120px;">ID</th>
+                                <th style="min-width:160px;">Tên</th>
+                                <th style="width:110px;">Trạng thái</th>
+                                <th style="min-width:200px;">Lý do lỗi</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(it, ii) in bm.items" :key="ii">
+                                <td style="vertical-align:middle;"><span :class="['badge', scanAssetBadgeClass(it.type)]" style="font-size:10.5px;">{{ it.type }}</span></td>
+                                <td class="mono" style="vertical-align:middle; color:#3b82f6; font-size:11.5px; font-weight:500;">{{ it.id }}</td>
+                                <td style="vertical-align:middle; font-size:12.5px;">{{ it.name }}</td>
+                                <td style="vertical-align:middle;"><span :class="['badge', scanStatusClass(it.status)]">{{ scanStatusLabel(it.status) }}</span></td>
+                                <td style="vertical-align:middle; color:#ef4444; font-size:12px;">{{ it.error || '—' }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                        <div v-else style="font-size:12px; color:#94a3b8; font-style:italic;">Không có asset nào được scan.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; background:#f8fafc;">
+                <div style="font-size:12.5px; color:#64748b;">
+                  Tổng <strong style="color:var(--text-primary);">{{ scanAuditDetail.bmSuccess }}/{{ scanAuditDetail.bmRequested }}</strong> BM scan thành công
+                </div>
+                <button class="btn btn-green" @click="scanAuditDetail = null">Đóng</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- ══ MODULE: NGƯỜI DÙNG ══ -->
         <div v-if="activeModule === 'users'" class="fade-in">
 
@@ -3490,6 +3964,155 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
             ],
           },
         ],
+        // /scanbm — Whitelist
+        scanWhitelistSearch: '',
+        scanWhitelistAddOpen: false,
+        scanWhitelistDraft: { bmId:'', name:'' },
+        scanBmWhitelist: [
+          { id:1, bmId:'248859189625309', name:'BM Alpha Client',   active:true,  addedAt:'2026-04-01 09:00' },
+          { id:2, bmId:'556796570706576', name:'BM Beta Agency',    active:true,  addedAt:'2026-04-05 14:30' },
+          { id:3, bmId:'909315744963488', name:'BM Gamma Inactive', active:false, addedAt:'2026-04-10 10:15' },
+          { id:4, bmId:'153219434449737', name:'BM Delta Reserve',  active:true,  addedAt:'2026-04-15 08:45' },
+        ],
+        // /scanbm — Asset permissions
+        scanAssetPermSearch: '',
+        scanAssetOptions: [
+          { key:'TKQC',      label:'Tài khoản quảng cáo' },
+          { key:'Fanpage',   label:'Trang Facebook' },
+          { key:'Pixel',     label:'Facebook Pixel' },
+          { key:'User',      label:'Thành viên trong BM' },
+          { key:'Apps',      label:'Ứng dụng trong BM' },
+          { key:'Catalogue', label:'Danh mục sản phẩm' },
+        ],
+        scanAssetPermissions: [
+          { id:1, name:'Nguyễn CS Minh', username:'@cs_minh', assets:['TKQC','Fanpage','Pixel'] },
+          { id:2, name:'Trần CS Lan',    username:'@cs_lan',  assets:['TKQC','Fanpage'] },
+          { id:3, name:'Lê CS Hùng',     username:'@cs_hung', assets:['TKQC','Fanpage','Pixel','User','Apps','Catalogue'] },
+        ],
+        scanAssetModal: { open:false, csId:null, draft:[] },
+        // /scanbm — Limit theo CS
+        scanCsLimitSearch: '',
+        scanCsLimitConfig: {
+          enabled: true,
+          defaultLimit: 10,
+          resetTime: '00:00 UTC+7',
+          overrides: [
+            { id:1, name:'Nguyễn CS Minh', username:'@cs_minh', limit: 20,   usedToday: 18 },
+            { id:2, name:'Trần CS Lan',    username:'@cs_lan',  limit: null, usedToday: 3  },
+            { id:3, name:'Lê CS Hùng',     username:'@cs_hung', limit: 50,   usedToday: 50 },
+          ],
+        },
+        // /scanbm — Giới hạn số BM mỗi lần scan
+        scanMaxBmPerRequest: 10,
+        // /scanbm — Audit log
+        scanAuditSearch: '',
+        scanAuditFilterStatus: 'all',
+        scanAuditFilterFrom: '',
+        scanAuditFilterTo: '',
+        scanAuditDetail: null,
+        scanAuditBmExpanded: {},
+        scanAuditLogs: [
+          {
+            id:1,
+            time:'2026-04-24 09:00:11',
+            username:'@cs_minh',
+            group:'Group KH Alpha',
+            command:'/scanbm',
+            bmRequested:3, bmSuccess:3,
+            assets:['TKQC','Fanpage','Pixel'],
+            paramSummary:'BM: 248859189625309, 556796570706576, 909315744963488 | TKQC, Fanpage, Pixel',
+            status:'success',
+            resultSummary:'3/3 BM scan thành công',
+            usedCountSnapshot:'5/20',
+            bms:[
+              { bmId:'248859189625309', name:'BM Alpha Client', status:'success', error:'',
+                items:[
+                  { type:'TKQC',    id:'act_111', name:'RMFA US-RM TEST 1', status:'success', error:'' },
+                  { type:'Fanpage', id:'108279508254758', name:'LandingPage Lab', status:'success', error:'' },
+                  { type:'Pixel',   id:'pxl_001', name:'rm_nig', status:'success', error:'' },
+                ],
+              },
+              { bmId:'556796570706576', name:'BM Beta Agency', status:'success', error:'',
+                items:[
+                  { type:'TKQC',    id:'act_222', name:'RMFA EU-RM TEST 2', status:'success', error:'' },
+                  { type:'Fanpage', id:'123092379216788', name:'Kim Dung', status:'success', error:'' },
+                  { type:'Pixel',   id:'pxl_002', name:'rm_za', status:'success', error:'' },
+                ],
+              },
+              { bmId:'909315744963488', name:'BM Gamma Inactive', status:'success', error:'',
+                items:[
+                  { type:'TKQC', id:'act_333', name:'RMFA VN-RM TEST 3', status:'success', error:'' },
+                ],
+              },
+            ],
+          },
+          {
+            id:2,
+            time:'2026-04-24 10:22:44',
+            username:'@cs_lan',
+            group:'Group KH Beta',
+            command:'/scanbm',
+            bmRequested:2, bmSuccess:1,
+            assets:['TKQC','Fanpage'],
+            paramSummary:'BM: 248859189625309, 153219434449737 | TKQC, Fanpage',
+            status:'partial',
+            resultSummary:'1/2 BM scan thành công',
+            usedCountSnapshot:'3/10',
+            bms:[
+              { bmId:'248859189625309', name:'BM Alpha Client', status:'success', error:'',
+                items:[
+                  { type:'TKQC',    id:'act_111', name:'RMFA US-RM TEST 1', status:'success', error:'' },
+                  { type:'Fanpage', id:'108279508254758', name:'LandingPage Lab', status:'success', error:'' },
+                ],
+              },
+              { bmId:'153219434449737', name:'BM Delta Reserve', status:'failed',
+                error:'Lỗi API Facebook — Rate limit exceeded',
+                items:[],
+              },
+            ],
+          },
+          {
+            id:3,
+            time:'2026-04-24 11:05:30',
+            username:'@cs_hung',
+            group:'Group KH Gamma',
+            command:'/scanbm',
+            bmRequested:1, bmSuccess:0,
+            assets:['TKQC','User'],
+            paramSummary:'BM: 999888777666 | TKQC, User',
+            status:'failed',
+            resultSummary:'BM không có trong whitelist',
+            usedCountSnapshot:'50/50',
+            bms:[
+              { bmId:'999888777666', name:'Unknown BM', status:'failed',
+                error:'BM không có trong whitelist',
+                items:[],
+              },
+            ],
+          },
+          {
+            id:4,
+            time:'2026-04-24 13:41:09',
+            username:'@cs_minh',
+            group:'Group KH Alpha',
+            command:'/scanbm',
+            bmRequested:1, bmSuccess:0,
+            assets:['TKQC','Fanpage','User'],
+            paramSummary:'BM: 248859189625309 | TKQC, Fanpage, User',
+            status:'partial',
+            resultSummary:'Scan TKQC + Fanpage OK — User bị bỏ qua do không có quyền',
+            usedCountSnapshot:'18/20',
+            bms:[
+              { bmId:'248859189625309', name:'BM Alpha Client', status:'success', error:'',
+                items:[
+                  { type:'TKQC',    id:'act_111', name:'RMFA US-RM TEST 1', status:'success', error:'' },
+                  { type:'Fanpage', id:'108279508254758', name:'LandingPage Lab', status:'success', error:'' },
+                  { type:'User',    id:'—', name:'—', status:'failed', error:'Không có quyền scan User' },
+                ],
+              },
+            ],
+          },
+        ],
         // /sharetkqc — Limit Simulator
         simulator: {
           open: false,
@@ -3834,6 +4457,45 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
         if (!q) return this.csLimitConfig.overrides;
         return this.csLimitConfig.overrides.filter(cs =>
           (cs.username || '').toLowerCase().includes(q));
+      },
+      // /scanbm — computed
+      filteredScanWhitelist() {
+        const q = (this.scanWhitelistSearch || '').trim().toLowerCase();
+        if (!q) return this.scanBmWhitelist;
+        return this.scanBmWhitelist.filter(b =>
+          b.bmId.includes(this.scanWhitelistSearch.trim()) ||
+          (b.name || '').toLowerCase().includes(q));
+      },
+      filteredScanAssetPermissions() {
+        const q = (this.scanAssetPermSearch || '').trim().toLowerCase();
+        if (!q) return this.scanAssetPermissions;
+        return this.scanAssetPermissions.filter(cs =>
+          (cs.username || '').toLowerCase().includes(q) ||
+          (cs.name || '').toLowerCase().includes(q));
+      },
+      filteredScanCsOverrides() {
+        const q = (this.scanCsLimitSearch || '').trim().toLowerCase();
+        if (!q) return this.scanCsLimitConfig.overrides;
+        return this.scanCsLimitConfig.overrides.filter(cs =>
+          (cs.username || '').toLowerCase().includes(q));
+      },
+      scanAssetModalUsername() {
+        const cs = this.scanAssetPermissions.find(x => x.id === this.scanAssetModal.csId);
+        return cs ? cs.username : '';
+      },
+      filteredScanAuditLogs() {
+        const q = (this.scanAuditSearch || '').trim().toLowerCase();
+        return this.scanAuditLogs.filter(log => {
+          if (q) {
+            const hay = (log.username + ' ' + log.group).toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          if (this.scanAuditFilterStatus !== 'all' && log.status !== this.scanAuditFilterStatus) return false;
+          const day = log.time.slice(0, 10);
+          if (this.scanAuditFilterFrom && day < this.scanAuditFilterFrom) return false;
+          if (this.scanAuditFilterTo && day > this.scanAuditFilterTo) return false;
+          return true;
+        });
       },
       // /revoketkqc — computed
       filteredRevokeCsOverrides() {
@@ -4322,6 +4984,127 @@ Thao tác không thể hoàn tác. Xác nhận thực hiện?
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = `revoke-audit-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      },
+      // /scanbm — Whitelist
+      openAddScanBm() {
+        this.scanWhitelistDraft = { bmId:'', name:'' };
+        this.scanWhitelistAddOpen = true;
+      },
+      saveScanBmDraft() {
+        const bmId = (this.scanWhitelistDraft.bmId || '').trim();
+        const name = (this.scanWhitelistDraft.name || '').trim();
+        if (!bmId || !name) { alert('Vui lòng nhập đủ BM ID và tên BM.'); return; }
+        if (this.scanBmWhitelist.some(b => b.bmId === bmId)) { alert('BM ID đã tồn tại trong whitelist.'); return; }
+        const newId = this.scanBmWhitelist.reduce((m, b) => Math.max(m, b.id), 0) + 1;
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        this.scanBmWhitelist.unshift({
+          id:newId, bmId, name, active:true,
+          addedAt:`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`,
+        });
+        this.scanWhitelistAddOpen = false;
+      },
+      deleteScanBm(bm) {
+        if (!confirm(`Xóa BM "${bm.name}" (${bm.bmId}) khỏi whitelist?`)) return;
+        this.scanBmWhitelist = this.scanBmWhitelist.filter(b => b.id !== bm.id);
+      },
+      // /scanbm — Asset permissions
+      scanAssetBadgeClass(type) {
+        return ({
+          TKQC:'bg-blue', Fanpage:'bg-green', Pixel:'bg-purple',
+          User:'bg-amber', Apps:'bg-red', Catalogue:'bg-amber',
+        })[type] || 'bg-gray';
+      },
+      openScanAssetModal(cs) {
+        this.scanAssetModal = { open:true, csId:cs.id, draft:[...cs.assets] };
+      },
+      closeScanAssetModal() { this.scanAssetModal.open = false; },
+      toggleScanAssetDraft(key, val) {
+        if (val) {
+          if (!this.scanAssetModal.draft.includes(key)) this.scanAssetModal.draft.push(key);
+        } else {
+          this.scanAssetModal.draft = this.scanAssetModal.draft.filter(x => x !== key);
+        }
+      },
+      saveScanAssetModal() {
+        const cs = this.scanAssetPermissions.find(x => x.id === this.scanAssetModal.csId);
+        if (cs) {
+          const order = this.scanAssetOptions.map(o => o.key);
+          cs.assets = order.filter(k => this.scanAssetModal.draft.includes(k));
+        }
+        this.scanAssetModal.open = false;
+      },
+      openAddScanAssetCs() {
+        const username = prompt('Username Telegram (vd: @cs_xyz):');
+        if (!username) return;
+        const name = prompt('Tên CS:') || username;
+        const newId = this.scanAssetPermissions.reduce((m, x) => Math.max(m, x.id), 0) + 1;
+        this.scanAssetPermissions.push({
+          id:newId, name:name.trim(), username:username.trim(),
+          assets:['TKQC','Fanpage'],
+        });
+      },
+      // /scanbm — CS limit helpers
+      scanCsEffectiveLimit(cs) {
+        const v = cs.limit == null || cs.limit === '' ? this.scanCsLimitConfig.defaultLimit : cs.limit;
+        return Number(v) || 0;
+      },
+      scanCsUsedPct(cs) {
+        const lim = this.scanCsEffectiveLimit(cs);
+        if (!lim) return 0;
+        return Math.min(100, Math.round((cs.usedToday / lim) * 100));
+      },
+      scanCsRemaining(cs) {
+        return Math.max(0, this.scanCsEffectiveLimit(cs) - cs.usedToday);
+      },
+      resetScanCsUsed(cs) { cs.usedToday = 0; },
+      addScanCsOverride() {
+        const username = prompt('Username Telegram (vd: @cs_xyz):');
+        if (!username) return;
+        const name = prompt('Tên CS:') || username;
+        const newId = this.scanCsLimitConfig.overrides.reduce((m, x) => Math.max(m, x.id), 0) + 1;
+        this.scanCsLimitConfig.overrides.push({
+          id:newId, name:name.trim(), username:username.trim(), limit:null, usedToday:0,
+        });
+      },
+      // /scanbm — Save all
+      saveAllScanConfig() {
+        const wl = this.scanBmWhitelist.length;
+        const wlActive = this.scanBmWhitelist.filter(b => b.active).length;
+        alert(
+          'Đã lưu cấu hình scan BM:\n' +
+          `• Whitelist: ${wlActive}/${wl} BM đang Active\n` +
+          `• Phân quyền asset: ${this.scanAssetPermissions.length} CS\n` +
+          `• Limit CS: ${this.scanCsLimitConfig.enabled ? `bật (mặc định ${this.scanCsLimitConfig.defaultLimit} lần/ngày)` : 'tắt'}\n` +
+          `• Số BM tối đa/lần: ${this.scanMaxBmPerRequest || 'không giới hạn'}`
+        );
+      },
+      // /scanbm — Audit log
+      scanStatusClass(s) {
+        return s === 'success' ? 'bg-green' : s === 'failed' ? 'bg-red' : 'bg-amber';
+      },
+      scanStatusLabel(s) {
+        return s === 'success' ? 'Success' : s === 'failed' ? 'Failed' : 'Partial';
+      },
+      openScanAuditDetail(log) {
+        this.scanAuditDetail = log;
+        this.scanAuditBmExpanded = {};
+      },
+      toggleScanAuditBm(idx) {
+        this.scanAuditBmExpanded = { ...this.scanAuditBmExpanded, [idx]: !this.scanAuditBmExpanded[idx] };
+      },
+      exportScanAuditCsv() {
+        const rows = [['Thời gian','Username','Group','Lệnh','BM yêu cầu','BM thành công','Loại tài sản','Tham số','Trạng thái','Kết quả']];
+        this.filteredScanAuditLogs.forEach(l => {
+          rows.push([l.time, l.username, l.group, l.command, l.bmRequested, l.bmSuccess, l.assets.join('|'), l.paramSummary, l.status, l.resultSummary]);
+        });
+        const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `scan-audit-${new Date().toISOString().slice(0,10)}.csv`;
         a.click();
         URL.revokeObjectURL(a.href);
       },
